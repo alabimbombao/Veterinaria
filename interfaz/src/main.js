@@ -11,7 +11,7 @@ import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 
 // Quasar
-import { Quasar } from 'quasar'
+import { Quasar, Notify, Loading } from 'quasar'
 
 // Quasar - importar iconos de Material Design
 import '@quasar/extras/material-icons/material-icons.css'
@@ -32,7 +32,17 @@ app.use(router)
 
 // ----- Configurar Quasar -----
 app.use(Quasar, {
-  plugins: {}, // aquí se pueden agregar plugins de Quasar: Dialog, Notify, etc.
+  plugins: {
+    Notify,
+    Loading
+  },
+  config: {
+    notify: {
+      position: 'top-right',
+      timeout: 3000,
+      textColor: 'white'
+    }
+  }
 })
 
 // ----- Montar la aplicación -----
