@@ -1,8 +1,9 @@
 import axios from 'axios'
 
 // Crear instancia de Axios
+// Usa variable de entorno o la ruta relativa /api para despliegue unificado
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api',
+  baseURL: import.meta.env.VITE_API_URL || '/api',
   headers: {
     'Content-Type': 'application/json'
   }

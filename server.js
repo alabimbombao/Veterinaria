@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const { dbConnection } = require('./backend/database/config');
@@ -51,8 +53,14 @@ class Server {
         // Lectura y parseo del body a JSON
         this.app.use(express.json());
 
-        // Ruta de bienvenida / salud
-        this.app.get('/', (req, res) => {
+        // Servir archivos estáticos del frontend (si interfaz/dist existe)
+        const frontendDist = path.join(__dirname, 'interfaz/dist');
+        if (fs.existsSync(frontendDist)) {
+            this.app.use(express.static(frontendDist));
+        }
+
+        // Endpoint de salud de la API
+        this.app.get('/api/health', (req, res) => {
             res.json({
                 ok: true,
                 mensaje: 'API REST Veterinaria funcionando correctamente con MongoDB Atlas'
@@ -67,6 +75,21 @@ class Server {
         this.app.use(this.paths.mascotas, require('./backend/routes/mascotas'));
         this.app.use(this.paths.visitas, require('./backend/routes/visitas'));
         this.app.use(this.paths.tratamientos, require('./backend/routes/tratamientos'));
+
+        // Redirección SPA para el frontend
+        const distIndex = path.join(__dirname, 'interfaz/dist/index.html');
+        if (fs.existsSync(distIndex)) {
+            this.app.get('*', (req, res) => {
+                res.sendFile(distIndex);
+            });
+        } else {
+            this.app.get('/', (req, res) => {
+                res.json({
+                    ok: true,
+                    mensaje: 'API REST Veterinaria funcionando correctamente con MongoDB Atlas'
+                });
+            });
+        }
     }
 
     async listen() {
