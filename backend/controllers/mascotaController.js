@@ -1,6 +1,6 @@
 const { response, request } = require('express');
 const Mascota = require('../models/Mascota');
-const Dueno = require('../models/Dueno');
+const Dueno = require('../models/dueño');
 const Veterinario = require('../models/Veterinario');
 
 // Obtener todas las mascotas activas

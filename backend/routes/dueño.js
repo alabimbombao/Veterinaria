@@ -7,7 +7,7 @@ const {
     crearDueno,
     actualizarDueno,
     eliminarDueno
-} = require('../controllers/duenoController');
+} = require('../controllers/dueñoController');
 
 const router = Router();
 

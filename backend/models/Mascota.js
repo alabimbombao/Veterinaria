@@ -4,7 +4,7 @@ const MascotaSchema = new Schema(
     {
         iddueño: {
             type: Schema.Types.ObjectId,
-            ref: 'Dueno',
+            ref: 'Dueño',
             required: [true, 'El ID del dueño es obligatorio']
         },
         idveterinario: {
@@ -19,15 +19,15 @@ const MascotaSchema = new Schema(
         especie: {
             type: String,
             required: [true, 'La especie es obligatoria'],
-            trim: true
+            trim: true,
+            alias: 'especialzie'
         },
         raza: {
             type: String,
             trim: true
         },
         edad_aprox: {
-            type: String,
-            trim: true
+            type: Number
         },
         peso_actual: {
             type: Number

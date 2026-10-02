@@ -29,6 +29,9 @@ const VisitaSchema = new Schema(
             type: String,
             trim: true
         },
+        pesoregistrado: {
+            type: Number
+        },
         estado: {
             type: Boolean,
             default: true

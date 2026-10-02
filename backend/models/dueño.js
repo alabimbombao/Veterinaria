@@ -7,9 +7,10 @@ const DuenoSchema = new Schema(
             required: [true, 'El nombre es obligatorio'],
             trim: true
         },
-        direccion: {
+        dirección: {
             type: String,
-            trim: true
+            trim: true,
+            alias: 'direccion'
         },
         telefono: {
             type: String,
@@ -32,10 +33,23 @@ const DuenoSchema = new Schema(
     }
 );
 
+// Sobrescribir toJSON para devolver exactamente las variables requeridas
 DuenoSchema.methods.toJSON = function () {
-    const { __v, _id, ...dueno } = this.toObject();
+    const { __v, _id, id, direccion, ...dueno } = this.toObject();
     dueno.iddueño = _id;
+    dueno.dirección = this.dirección || direccion;
     return dueno;
 };
 
-module.exports = model('Dueno', DuenoSchema);
+// Registrar modelo Dueño y Dueno para compatibilidad completa
+let DuenoModel;
+try {
+    DuenoModel = model('Dueño', DuenoSchema);
+} catch (e) {
+    DuenoModel = model('Dueño');
+}
+try {
+    model('Dueno', DuenoSchema);
+} catch (e) {}
+
+module.exports = DuenoModel;

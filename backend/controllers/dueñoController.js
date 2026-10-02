@@ -1,5 +1,5 @@
 const { response, request } = require('express');
-const Dueno = require('../models/Dueno');
+const Dueno = require('../models/dueño');
 
 // Obtener todos los dueños activos
 const getDuenos = async (req = request, res = response) => {
@@ -57,7 +57,8 @@ const getDuenoById = async (req = request, res = response) => {
 // Crear un nuevo dueño
 const crearDueno = async (req = request, res = response) => {
     try {
-        const { nombre, direccion, telefono, email } = req.body;
+        const { nombre, direccion, dirección, telefono, email } = req.body;
+        const direccionFinal = dirección !== undefined ? dirección : direccion;
 
         // Verificar si el email ya está registrado
         const duenoExiste = await Dueno.findOne({ email });
@@ -68,7 +69,12 @@ const crearDueno = async (req = request, res = response) => {
             });
         }
 
-        const dueno = new Dueno({ nombre, direccion, telefono, email });
+        const dueno = new Dueno({
+            nombre,
+            dirección: direccionFinal,
+            telefono,
+            email
+        });
         await dueno.save();
 
         res.status(201).json({
@@ -89,7 +95,11 @@ const crearDueno = async (req = request, res = response) => {
 const actualizarDueno = async (req = request, res = response) => {
     try {
         const { id } = req.params;
-        const { _id, estado, ...data } = req.body;
+        const { _id, iddueño, estado, ...data } = req.body;
+
+        if (data.direccion !== undefined && data.dirección === undefined) {
+            data.dirección = data.direccion;
+        }
 
         // Si se actualiza el email, verificar que no pertenezca a otro dueño
         if (data.email) {

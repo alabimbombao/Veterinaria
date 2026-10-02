@@ -12,6 +12,7 @@ class Server {
         // Rutas principales de la API REST
         this.paths = {
             duenos: '/api/duenos',
+            dueños: '/api/dueños',
             veterinarios: '/api/veterinarios',
             mascotas: '/api/mascotas',
             visitas: '/api/visitas',
@@ -60,7 +61,8 @@ class Server {
     }
 
     routes() {
-        this.app.use(this.paths.duenos, require('./backend/routes/duenos'));
+        this.app.use(this.paths.duenos, require('./backend/routes/dueño'));
+        this.app.use(this.paths.dueños, require('./backend/routes/dueño'));
         this.app.use(this.paths.veterinarios, require('./backend/routes/veterinarios'));
         this.app.use(this.paths.mascotas, require('./backend/routes/mascotas'));
         this.app.use(this.paths.visitas, require('./backend/routes/visitas'));

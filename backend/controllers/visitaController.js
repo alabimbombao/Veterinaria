@@ -63,7 +63,7 @@ const getVisitaById = async (req = request, res = response) => {
 // Crear nueva visita
 const crearVisita = async (req = request, res = response) => {
     try {
-        const { idmascota, idveterinario, fechavisita, motivoconsulta, diagnostico, observaciones } = req.body;
+        const { idmascota, idveterinario, fechavisita, motivoconsulta, diagnostico, observaciones, pesoregistrado } = req.body;
 
         // Verificar que la mascota exista
         const mascotaExiste = await Mascota.findById(idmascota);
@@ -89,7 +89,8 @@ const crearVisita = async (req = request, res = response) => {
             fechavisita: fechavisita || Date.now(),
             motivoconsulta,
             diagnostico,
-            observaciones
+            observaciones,
+            pesoregistrado
         });
 
         await visita.save();
