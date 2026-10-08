@@ -1,6 +1,14 @@
 import { defineStore } from 'pinia'
 import { tratamientosAPI } from '../services/api.js'
 
+function extractId(val) {
+  if (!val) return null
+  if (typeof val === 'object') {
+    return (val._id || val.idvisita || val.idtratamiento || '').toString()
+  }
+  return val.toString()
+}
+
 export const useTratamientosStore = defineStore('tratamientos', {
   // ─── Estado ────────────────────────────────────────────
   state: () => ({
@@ -16,11 +24,11 @@ export const useTratamientosStore = defineStore('tratamientos', {
     total:   (state) => state.tratamientos.length,
     activos: (state) => state.tratamientos.filter(t => t.estado !== false),
     getById: (state) => (id) =>
-      state.tratamientos.find(t => (t.idtratamiento || t._id)?.toString() === id?.toString()),
+      state.tratamientos.find(t => extractId(t.idtratamiento || t._id) === extractId(id)),
     /** Tratamientos de una visita específica */
     porVisita: (state) => (idVisita) =>
       state.tratamientos.filter(
-        t => t.idvisita?.toString() === idVisita?.toString()
+        t => extractId(t.idvisita) === extractId(idVisita)
       ),
     /** Próximos tratamientos (proxima_fecha >= hoy) */
     proximos: (state) => {

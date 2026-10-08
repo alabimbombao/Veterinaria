@@ -4,7 +4,7 @@ const Dueno = require('../models/dueño');
 // Obtener todos los dueños activos
 const getDuenos = async (req = request, res = response) => {
     try {
-        const { limite = 50, desde = 0 } = req.query;
+        const { limite = 10000, desde = 0 } = req.query;
         const query = { estado: true };
 
         const [total, duenos] = await Promise.all([
@@ -58,7 +58,7 @@ const getDuenoById = async (req = request, res = response) => {
 const crearDueno = async (req = request, res = response) => {
     try {
         const { nombre, direccion, dirección, telefono, email } = req.body;
-        const direccionFinal = dirección !== undefined ? dirección : direccion;
+        const direccionFinal = dirección || direccion || '';
 
         // Verificar si el email ya está registrado
         const duenoExiste = await Dueno.findOne({ email });
@@ -97,7 +97,7 @@ const actualizarDueno = async (req = request, res = response) => {
         const { id } = req.params;
         const { _id, iddueño, estado, ...data } = req.body;
 
-        if (data.direccion !== undefined && data.dirección === undefined) {
+        if (data.direccion !== undefined) {
             data.dirección = data.direccion;
         }
 

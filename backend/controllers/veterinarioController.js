@@ -4,7 +4,7 @@ const Veterinario = require('../models/Veterinario');
 // Obtener todos los veterinarios activos
 const getVeterinarios = async (req = request, res = response) => {
     try {
-        const { limite = 50, desde = 0 } = req.query;
+        const { limite = 10000, desde = 0 } = req.query;
         const query = { estado: true };
 
         const [total, veterinarios] = await Promise.all([
@@ -57,9 +57,9 @@ const getVeterinarioById = async (req = request, res = response) => {
 // Crear nuevo veterinario
 const crearVeterinario = async (req = request, res = response) => {
     try {
-        const { nombre, especialidad } = req.body;
+        const { nombre, especialidad, costo_consulta } = req.body;
 
-        const veterinario = new Veterinario({ nombre, especialidad });
+        const veterinario = new Veterinario({ nombre, especialidad, costo_consulta });
         await veterinario.save();
 
         res.status(201).json({

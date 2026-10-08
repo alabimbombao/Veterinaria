@@ -6,7 +6,7 @@ const Veterinario = require('../models/Veterinario');
 // Obtener todas las visitas activas
 const getVisitas = async (req = request, res = response) => {
     try {
-        const { limite = 50, desde = 0 } = req.query;
+        const { limite = 10000, desde = 0 } = req.query;
         const query = { estado: true };
 
         const [total, visitas] = await Promise.all([
@@ -63,7 +63,7 @@ const getVisitaById = async (req = request, res = response) => {
 // Crear nueva visita
 const crearVisita = async (req = request, res = response) => {
     try {
-        const { idmascota, idveterinario, fechavisita, motivoconsulta, diagnostico, observaciones, pesoregistrado } = req.body;
+        const { idmascota, idveterinario, fechavisita, motivoconsulta, diagnostico, observaciones, pesoregistrado, costo_consulta, costo_total } = req.body;
 
         // Verificar que la mascota exista
         const mascotaExiste = await Mascota.findById(idmascota);
@@ -83,6 +83,9 @@ const crearVisita = async (req = request, res = response) => {
             });
         }
 
+        const tarifaVet = costo_consulta !== undefined ? Number(costo_consulta) : (vetExiste.costo_consulta || 70000);
+        const costoTot = costo_total !== undefined ? Number(costo_total) : tarifaVet;
+
         const visita = new Visita({
             idmascota,
             idveterinario,
@@ -90,7 +93,9 @@ const crearVisita = async (req = request, res = response) => {
             motivoconsulta,
             diagnostico,
             observaciones,
-            pesoregistrado
+            pesoregistrado,
+            costo_consulta: tarifaVet,
+            costo_total: costoTot
         });
 
         await visita.save();

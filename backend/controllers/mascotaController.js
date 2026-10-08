@@ -6,7 +6,7 @@ const Veterinario = require('../models/Veterinario');
 // Obtener todas las mascotas activas
 const getMascotas = async (req = request, res = response) => {
     try {
-        const { limite = 50, desde = 0 } = req.query;
+        const { limite = 10000, desde = 0 } = req.query;
         const query = { estado: true };
 
         const [total, mascotas] = await Promise.all([

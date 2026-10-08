@@ -35,9 +35,11 @@ const DuenoSchema = new Schema(
 
 // Sobrescribir toJSON para devolver exactamente las variables requeridas
 DuenoSchema.methods.toJSON = function () {
-    const { __v, _id, id, direccion, ...dueno } = this.toObject();
+    const { __v, _id, id, ...dueno } = this.toObject();
+    const dirVal = this.dirección || this.direccion || dueno.dirección || dueno.direccion || '';
     dueno.iddueño = _id;
-    dueno.dirección = this.dirección || direccion;
+    dueno.direccion = dirVal;
+    dueno.dirección = dirVal;
     return dueno;
 };
 

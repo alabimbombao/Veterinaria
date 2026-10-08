@@ -5,7 +5,7 @@ const Visita = require('../models/Visita');
 // Obtener todos los tratamientos activos
 const getTratamientos = async (req = request, res = response) => {
     try {
-        const { limite = 50, desde = 0 } = req.query;
+        const { limite = 10000, desde = 0 } = req.query;
         const query = { estado: true };
 
         const [total, tratamientos] = await Promise.all([
@@ -74,7 +74,7 @@ const getTratamientoById = async (req = request, res = response) => {
 // Crear nuevo tratamiento
 const crearTratamiento = async (req = request, res = response) => {
     try {
-        const { idvisita, tipo, descripcion, dosis_indicaciones, proxima_fecha } = req.body;
+        const { idvisita, tipo, descripcion, dosis_indicaciones, costo, proxima_fecha } = req.body;
 
         // Verificar que la visita exista
         const visitaExiste = await Visita.findById(idvisita);
@@ -90,6 +90,7 @@ const crearTratamiento = async (req = request, res = response) => {
             tipo,
             descripcion,
             dosis_indicaciones,
+            costo,
             proxima_fecha
         });
 

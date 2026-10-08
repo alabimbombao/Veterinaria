@@ -32,6 +32,14 @@ const VisitaSchema = new Schema(
         pesoregistrado: {
             type: Number
         },
+        costo_consulta: {
+            type: Number,
+            default: 70000
+        },
+        costo_total: {
+            type: Number,
+            default: 70000
+        },
         estado: {
             type: Boolean,
             default: true

@@ -1,6 +1,14 @@
 import { defineStore } from 'pinia'
 import { visitasAPI } from '../services/api.js'
 
+function extractId(val) {
+  if (!val) return null
+  if (typeof val === 'object') {
+    return (val._id || val.idmascota || val.idveterinario || val.idvisita || '').toString()
+  }
+  return val.toString()
+}
+
 export const useVisitasStore = defineStore('visitas', {
   // ─── Estado ────────────────────────────────────────────
   state: () => ({
@@ -16,7 +24,7 @@ export const useVisitasStore = defineStore('visitas', {
     total:   (state) => state.visitas.length,
     activas: (state) => state.visitas.filter(v => v.estado !== false),
     getById: (state) => (id) =>
-      state.visitas.find(v => (v.idvisita || v._id)?.toString() === id?.toString()),
+      state.visitas.find(v => extractId(v.idvisita || v._id) === extractId(id)),
     /** Opciones para q-select en TratamientosView */
     opciones: (state) => state.visitas.map(v => ({
       label: `${v.fechavisita
@@ -27,7 +35,7 @@ export const useVisitasStore = defineStore('visitas', {
     /** Visitas de una mascota específica */
     porMascota: (state) => (idMascota) =>
       state.visitas.filter(
-        v => v.idmascota?.toString() === idMascota?.toString()
+        v => extractId(v.idmascota) === extractId(idMascota)
       ),
     filtradas: (state) => (q) => {
       if (!q) return state.visitas

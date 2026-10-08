@@ -1,7 +1,7 @@
 <template>
   <CrudPage
     title="Veterinarios"
-    subtitle="Personal médico registrado"
+    subtitle="Personal médico registrado y tarifas de consulta en Pesos Colombianos (COP)"
     add-label="Nuevo Veterinario"
     icon="medical_services"
     icon-gradient="linear-gradient(135deg,#48cae4,#0077b6)"
@@ -14,6 +14,13 @@
     @delete="confirmarEliminar($event)"
     @search="onSearch"
   >
+    <!-- Template para costo_consulta -->
+    <template #body-cell-costo_consulta="props">
+      <q-td :props="props" class="text-center font-weight-bold text-cyan-3">
+        {{ formatoCOP(props.row.costo_consulta || 70000) }}
+      </q-td>
+    </template>
+
     <!-- ── Dialog Formulario ───────────────────────────── -->
     <q-dialog v-model="dialog" class="vet-dialog">
       <q-card style="min-width:400px; background:#1a1d2e; border:1px solid rgba(255,255,255,0.1); border-radius:16px;">
@@ -26,8 +33,9 @@
         </q-card-section>
         <q-separator color="rgba(255,255,255,0.08)" />
         <q-card-section class="q-pa-lg q-gutter-sm">
-          <q-input v-model="form.nombre"       label="Nombre *"      dark outlined dense class="vet-input" />
-          <q-input v-model="form.especialidad" label="Especialidad"  dark outlined dense class="vet-input" />
+          <q-input v-model="form.nombre"         label="Nombre *"                 dark outlined dense class="vet-input" />
+          <q-input v-model="form.especie"        label="Especialidad"             dark outlined dense class="vet-input" v-model:model-value="form.especialidad" />
+          <q-input v-model.number="form.costo_consulta" label="Tarifa Consulta (COP)" dark outlined dense class="vet-input" type="number" prefix="$" />
         </q-card-section>
         <q-card-actions align="right" class="q-pa-md q-pt-none">
           <q-btn flat label="Cancelar" @click="dialog = false" style="color:rgba(255,255,255,0.5)" />
@@ -71,21 +79,21 @@ const dialog       = ref(false)
 const deleteDialog = ref(false)
 const searchTerm   = ref('')
 const selectedId   = ref(null)
-const form = ref({ nombre:'', especialidad:'' })
+const form = ref({ nombre:'', especialidad:'', costo_consulta: 70000 })
 
 const columns = [
-  { name:'nombre',       label:'Nombre',       field:'nombre',       align:'left', sortable:true },
-  { name:'especialidad', label:'Especialidad',  field:'especialidad', align:'left', sortable:true },
-  { name:'estado',       label:'Estado',        field:'estado',       align:'center' },
-  { name:'acciones',     label:'Acciones',      field:'acciones',     align:'center' },
+  { name:'nombre',         label:'Nombre',            field:'nombre',         align:'left', sortable:true },
+  { name:'especialidad',   label:'Especialidad',      field:'especialidad',   align:'left', sortable:true },
+  { name:'costo_consulta', label:'Tarifa Consulta',   field:'costo_consulta', align:'center', sortable:true },
+  { name:'acciones',       label:'Acciones',          field:'acciones',       align:'center' },
 ]
 
 function openDialog(row = null) {
   if (row) {
-    form.value   = { nombre: row.nombre, especialidad: row.especialidad }
+    form.value   = { nombre: row.nombre, especialidad: row.especialidad, costo_consulta: row.costo_consulta || 70000 }
     selectedId.value = row.idveterinario || row._id
   } else {
-    form.value   = { nombre:'', especialidad:'' }
+    form.value   = { nombre:'', especialidad:'', costo_consulta: 70000 }
     selectedId.value = null
   }
   dialog.value = true
@@ -126,6 +134,11 @@ async function eliminar() {
 }
 
 function onSearch(val) { searchTerm.value = val }
+
+function formatoCOP(valor) {
+  if (!valor && valor !== 0) return '$ 0 COP'
+  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(valor) + ' COP'
+}
 
 onMounted(() => store.fetchAll())
 </script>

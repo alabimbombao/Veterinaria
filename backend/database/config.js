@@ -1,4 +1,12 @@
 const mongoose = require('mongoose');
+const dns = require('dns');
+
+// Configurar DNS públicos para resolver registros SRV de MongoDB Atlas en proveedores que los bloquean
+try {
+    dns.setServers(['8.8.8.8', '1.1.1.1']);
+} catch (e) {
+    // Si falla la configuración de DNS, continuar con la predeterminada
+}
 
 /**
  * Establece la conexión con la base de datos MongoDB Atlas.

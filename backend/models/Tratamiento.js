@@ -20,6 +20,10 @@ const TratamientoSchema = new Schema(
             type: String,
             trim: true
         },
+        costo: {
+            type: Number,
+            default: 45000
+        },
         proxima_fecha: {
             type: Date
         },

@@ -76,17 +76,22 @@ const selectedId   = ref(null)
 const form = ref({ nombre:'', email:'', telefono:'', direccion:'' })
 
 const columns = [
-  { name:'nombre',    label:'Nombre',    field:'nombre',    align:'left',   sortable:true },
-  { name:'email',     label:'Email',     field:'email',     align:'left',   sortable:true },
-  { name:'telefono',  label:'Teléfono',  field:'telefono',  align:'left'   },
-  { name:'direccion', label:'Dirección', field:'direccion', align:'left'   },
-  { name:'estado',    label:'Estado',    field:'estado',    align:'center' },
-  { name:'acciones',  label:'Acciones',  field:'acciones',  align:'center' },
+  { name:'nombre',    label:'Nombre',    field:'nombre',                                      align:'left',   sortable:true },
+  { name:'email',     label:'Email',     field:'email',                                       align:'left',   sortable:true },
+  { name:'telefono',  label:'Teléfono',  field: r => r.telefono || '—',                       align:'left'   },
+  { name:'direccion', label:'Dirección', field: r => r.direccion || r.dirección || '—',       align:'left'   },
+  { name:'estado',    label:'Estado',    field:'estado',                                      align:'center' },
+  { name:'acciones',  label:'Acciones',  field:'acciones',                                    align:'center' },
 ]
 
 function openDialog(row = null) {
   if (row) {
-    form.value   = { nombre: row.nombre, email: row.email, telefono: row.telefono, direccion: row.direccion }
+    form.value   = {
+      nombre: row.nombre,
+      email: row.email,
+      telefono: row.telefono,
+      direccion: row.direccion || row.dirección || ''
+    }
     selectedId.value = row.iddueño || row._id
   } else {
     form.value   = { nombre:'', email:'', telefono:'', direccion:'' }

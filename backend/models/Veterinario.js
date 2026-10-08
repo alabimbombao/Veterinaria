@@ -11,6 +11,10 @@ const VeterinarioSchema = new Schema(
             type: String,
             trim: true
         },
+        costo_consulta: {
+            type: Number,
+            default: 70000
+        },
         estado: {
             type: Boolean,
             default: true

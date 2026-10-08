@@ -1,6 +1,14 @@
 import { defineStore } from 'pinia'
 import { mascotasAPI } from '../services/api.js'
 
+function extractId(val) {
+  if (!val) return null
+  if (typeof val === 'object') {
+    return (val._id || val.iddueño || val.idveterinario || val.idmascota || '').toString()
+  }
+  return val.toString()
+}
+
 export const useMascotasStore = defineStore('mascotas', {
   // ─── Estado ────────────────────────────────────────────
   state: () => ({
@@ -16,7 +24,7 @@ export const useMascotasStore = defineStore('mascotas', {
     total:   (state) => state.mascotas.length,
     activas: (state) => state.mascotas.filter(m => m.estado !== false),
     getById: (state) => (id) =>
-      state.mascotas.find(m => (m.idmascota || m._id)?.toString() === id?.toString()),
+      state.mascotas.find(m => extractId(m.idmascota || m._id) === extractId(id)),
     /** Opciones para q-select (incluye especie para identificar) */
     opciones: (state) => state.mascotas.map(m => ({
       label: `${m.nombre} (${m.especie || 'N/D'})`,
@@ -25,7 +33,7 @@ export const useMascotasStore = defineStore('mascotas', {
     /** Mascotas de un dueño específico */
     porDueno: (state) => (idDueno) =>
       state.mascotas.filter(
-        m => m['iddueño']?.toString() === idDueno?.toString()
+        m => extractId(m['iddueño']) === extractId(idDueno)
       ),
     filtradas: (state) => (q) => {
       if (!q) return state.mascotas

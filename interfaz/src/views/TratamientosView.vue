@@ -1,7 +1,7 @@
 <template>
   <CrudPage
     title="Tratamientos"
-    subtitle="Tratamientos médicos asignados a las visitas"
+    subtitle="Procedimientos médicos y medicamentos recetados con valores en Pesos Colombianos (COP)"
     add-label="Nuevo Tratamiento"
     icon="medication"
     icon-gradient="linear-gradient(135deg,#fd9644,#e74c3c)"
@@ -14,6 +14,13 @@
     @delete="confirmarEliminar($event)"
     @search="onSearch"
   >
+    <!-- Template para costo en COP -->
+    <template #body-cell-costo="props">
+      <q-td :props="props" class="text-center font-weight-bold text-purple-3">
+        {{ formatoCOP(props.row.costo || 45000) }}
+      </q-td>
+    </template>
+
     <!-- ── Dialog Formulario ───────────────────────────── -->
     <q-dialog v-model="dialog" class="vet-dialog">
       <q-card style="min-width:480px; background:#1a1d2e; border:1px solid rgba(255,255,255,0.1); border-radius:16px;">
@@ -26,20 +33,33 @@
         </q-card-section>
         <q-separator color="rgba(255,255,255,0.08)" />
         <q-card-section class="q-pa-lg q-gutter-sm">
+          <!-- Select Visita Médica con Búsqueda -->
           <q-select
             v-model="form.idvisita"
-            :options="visitasOpts"
-            label="Visita *"
+            :options="visitasFiltradasOpts"
+            use-input
+            input-debounce="0"
+            @filter="filterVisitas"
+            label="Buscar Visita Médica *"
             dark outlined dense class="vet-input"
+            popup-content-class="vet-select-popup"
             option-value="value" option-label="label"
             emit-value map-options
-          />
+          >
+            <template #no-option>
+              <q-item>
+                <q-item-section class="text-grey-5">No se encontraron visitas</q-item-section>
+              </q-item>
+            </template>
+          </q-select>
+
           <q-input v-model="form.tipo"               label="Tipo de tratamiento *"  dark outlined dense class="vet-input" />
+          <q-input v-model.number="form.costo"        label="Costo en COP ($)"       dark outlined dense class="vet-input" type="number" prefix="$" />
           <q-input v-model="form.descripcion"        label="Descripción"            dark outlined dense class="vet-input" type="textarea" autogrow />
           <q-input v-model="form.dosis_indicaciones" label="Dosis / Indicaciones"   dark outlined dense class="vet-input" type="textarea" autogrow />
           <q-input
             v-model="form.proxima_fecha"
-            label="Próxima fecha"
+            label="Próxima fecha de control"
             dark outlined dense class="vet-input"
             type="date"
           />
@@ -91,42 +111,76 @@ const deleteDialog = ref(false)
 const searchTerm   = ref('')
 const selectedId   = ref(null)
 
-const form = ref({ idvisita:'', tipo:'', descripcion:'', dosis_indicaciones:'', proxima_fecha:'' })
+const visitasFiltradasOpts = ref([])
+
+const form = ref({ idvisita:'', tipo:'', descripcion:'', dosis_indicaciones:'', costo: 45000, proxima_fecha:'' })
+
+function extractId(val) {
+  if (!val) return null
+  if (typeof val === 'object') return (val._id || val.idvisita || val.idmascota || '').toString()
+  return val.toString()
+}
 
 const visitasOpts = computed(() => visitasStore.visitas.map(v => {
-  const mascota = mascotasStore.mascotas.find(m => (m.idmascota || m._id)?.toString() === v.idmascota?.toString())
+  const visitId = extractId(v.idvisita || v._id)
+  const idMascotaStr = extractId(v.idmascota)
+  const mascota = mascotasStore.mascotas.find(m => extractId(m.idmascota || m._id) === idMascotaStr)
+  const f = v.fechavisita ? new Date(v.fechavisita).toLocaleDateString('es-CO') : '—'
   return {
-    label: `Visita ${new Date(v.fechavisita).toLocaleDateString('es-ES')} - ${mascota?.nombre || 'Mascota'}`,
-    value: v.idvisita || v._id
+    label: `Visita ${f} — ${mascota ? mascota.nombre : 'Mascota'} (${v.motivoconsulta || ''})`,
+    value: visitId
   }
 }))
 
+function filterVisitas(val, update) {
+  if (val === '') {
+    update(() => { visitasFiltradasOpts.value = visitasOpts.value })
+    return
+  }
+  update(() => {
+    const needle = val.toLowerCase()
+    visitasFiltradasOpts.value = visitasOpts.value.filter(
+      v => v.label.toLowerCase().includes(needle)
+    )
+  })
+}
+
 const columns = [
-  { name:'idvisita',          label:'Visita',             field: r => labelVisita(r.idvisita), align:'left', sortable:true },
-  { name:'tipo',              label:'Tipo',               field:'tipo',              align:'left', sortable:true },
+  { name:'idvisita',          label:'Visita / Paciente',  field: r => labelVisita(r.idvisita), align:'left', sortable:true },
+  { name:'tipo',              label:'Tratamiento',        field:'tipo',              align:'left', sortable:true },
+  { name:'costo',             label:'Costo (COP)',        field:'costo',             align:'center', sortable:true },
   { name:'descripcion',       label:'Descripción',        field:'descripcion',       align:'left' },
-  { name:'dosis_indicaciones',label:'Dosis/Indicaciones', field:'dosis_indicaciones',align:'left' },
-  { name:'proxima_fecha',     label:'Próxima Fecha',      field: r => r.proxima_fecha ? new Date(r.proxima_fecha).toLocaleDateString('es-ES') : '—', align:'center' },
-  { name:'estado',            label:'Estado',             field:'estado',            align:'center' },
+  { name:'dosis_indicaciones',label:'Indicaciones',       field:'dosis_indicaciones',align:'left' },
+  { name:'proxima_fecha',     label:'Próximo Control',   field: r => r.proxima_fecha ? new Date(r.proxima_fecha).toLocaleDateString('es-CO') : '—', align:'center' },
   { name:'acciones',          label:'Acciones',           field:'acciones',          align:'center' },
 ]
 
-function labelVisita(id) {
-  const v = visitasStore.visitas.find(x => (x.idvisita || x._id)?.toString() === id?.toString())
-  if (!v) return id
-  return v.fechavisita ? new Date(v.fechavisita).toLocaleDateString('es-ES') : id
+function labelVisita(val) {
+  if (!val) return '—'
+  const vId = extractId(val)
+  const v = visitasStore.visitas.find(x => extractId(x.idvisita || x._id) === vId)
+  if (!v) return 'Visita'
+  const idMascotaStr = extractId(v.idmascota)
+  const mascota = mascotasStore.mascotas.find(m => extractId(m.idmascota || m._id) === idMascotaStr)
+  const fecha = v.fechavisita ? new Date(v.fechavisita).toLocaleDateString('es-CO') : '—'
+  return `${mascota ? mascota.nombre : 'Mascota'} (${fecha})`
 }
 
 function openDialog(row = null) {
+  visitasFiltradasOpts.value = visitasOpts.value
+
   if (row) {
     form.value = {
-      idvisita: row.idvisita,
-      tipo: row.tipo, descripcion: row.descripcion, dosis_indicaciones: row.dosis_indicaciones,
+      idvisita: extractId(row.idvisita),
+      tipo: row.tipo,
+      descripcion: row.descripcion,
+      dosis_indicaciones: row.dosis_indicaciones,
+      costo: row.costo || 45000,
       proxima_fecha: row.proxima_fecha ? new Date(row.proxima_fecha).toISOString().slice(0,10) : ''
     }
     selectedId.value = row.idtratamiento || row._id
   } else {
-    form.value = { idvisita:'', tipo:'', descripcion:'', dosis_indicaciones:'', proxima_fecha:'' }
+    form.value = { idvisita:'', tipo:'', descripcion:'', dosis_indicaciones:'', costo: 45000, proxima_fecha:'' }
     selectedId.value = null
   }
   dialog.value = true
@@ -168,11 +222,17 @@ async function eliminar() {
 
 function onSearch(val) { searchTerm.value = val }
 
+function formatoCOP(valor) {
+  if (!valor && valor !== 0) return '$ 0 COP'
+  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(valor) + ' COP'
+}
+
 onMounted(async () => {
   await Promise.all([
     tratamientosStore.fetchAll(),
     visitasStore.fetchAll(),
     mascotasStore.fetchAll()
   ])
+  visitasFiltradasOpts.value = visitasOpts.value
 })
 </script>
