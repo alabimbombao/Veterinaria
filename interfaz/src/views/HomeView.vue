@@ -263,12 +263,14 @@
                 <q-icon name="health_and_safety" color="teal-4" size="20px" class="q-mr-xs" />
                 <span>Atención Médica Activa</span>
               </div>
-              <div class="status-val">100% operativo</div>
+              <div class="status-val">
+                {{ veterinariosStore.totalActivos }} activos / {{ veterinariosStore.totalInactivos }} inactivos
+              </div>
             </div>
             <q-linear-progress
-              value="1"
+              :value="veterinariosStore.total > 0 ? (veterinariosStore.totalActivos / veterinariosStore.total) : 1"
               color="teal-4"
-              track-color="grey-9"
+              track-color="red-9"
               class="q-mt-xs status-bar"
             />
           </div>
