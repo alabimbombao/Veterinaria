@@ -1,11 +1,11 @@
 const { response, request } = require('express');
 const Dueno = require('../models/dueño');
 
-// Obtener todos los dueños activos
+// Obtener todos los dueños (activos o todos)
 const getDuenos = async (req = request, res = response) => {
     try {
-        const { limite = 10000, desde = 0 } = req.query;
-        const query = { estado: true };
+        const { limite = 10000, desde = 0, incluirInactivos, todos } = req.query;
+        const query = (incluirInactivos === 'true' || todos === 'true' || incluirInactivos === true) ? {} : { estado: true };
 
         const [total, duenos] = await Promise.all([
             Dueno.countDocuments(query),
@@ -34,7 +34,7 @@ const getDuenoById = async (req = request, res = response) => {
         const { id } = req.params;
         const dueno = await Dueno.findById(id);
 
-        if (!dueno || !dueno.estado) {
+        if (!dueno) {
             return res.status(404).json({
                 ok: false,
                 msg: 'Dueño no encontrado'
@@ -57,7 +57,7 @@ const getDuenoById = async (req = request, res = response) => {
 // Crear un nuevo dueño
 const crearDueno = async (req = request, res = response) => {
     try {
-        const { nombre, direccion, dirección, telefono, email } = req.body;
+        const { nombre, direccion, dirección, telefono, email, estado } = req.body;
         const direccionFinal = dirección || direccion || '';
 
         // Verificar si el email ya está registrado
@@ -73,7 +73,8 @@ const crearDueno = async (req = request, res = response) => {
             nombre,
             dirección: direccionFinal,
             telefono,
-            email
+            email,
+            estado: estado !== undefined ? estado : true
         });
         await dueno.save();
 
@@ -95,7 +96,7 @@ const crearDueno = async (req = request, res = response) => {
 const actualizarDueno = async (req = request, res = response) => {
     try {
         const { id } = req.params;
-        const { _id, iddueño, estado, ...data } = req.body;
+        const { _id, iddueño, ...data } = req.body;
 
         if (data.direccion !== undefined) {
             data.dirección = data.direccion;
@@ -114,7 +115,7 @@ const actualizarDueno = async (req = request, res = response) => {
 
         const dueno = await Dueno.findByIdAndUpdate(id, data, { new: true });
 
-        if (!dueno || !dueno.estado) {
+        if (!dueno) {
             return res.status(404).json({
                 ok: false,
                 msg: 'Dueño no encontrado'

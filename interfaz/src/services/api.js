@@ -24,7 +24,7 @@ api.interceptors.response.use(
 
 // ── Dueños ──────────────────────────────────────────
 export const duenosAPI = {
-  getAll: () => api.get('/duenos'),
+  getAll: (params) => api.get('/duenos', { params }),
   getById: (id) => api.get(`/duenos/${id}`),
   create: (body) => api.post('/duenos', body),
   update: (id, body) => api.put(`/duenos/${id}`, body),

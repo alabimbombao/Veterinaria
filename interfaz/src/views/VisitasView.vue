@@ -24,7 +24,7 @@
     <div class="search-bar q-mb-lg">
       <q-input
         v-model="searchTerm"
-        placeholder="Buscar por mascota, veterinario, motivo o diagnóstico..."
+        placeholder="Buscar por mascota, dueño, veterinario, motivo o diagnóstico..."
         dense
         outlined
         dark
@@ -84,6 +84,13 @@
                 {{ formatoFecha(visita.fechavisita) }}
               </q-badge>
             </div>
+
+            <!-- Dueño Row -->
+            <div class="dueno-row q-mt-sm">
+              <q-icon name="person" size="14px" color="purple-3" />
+              <span class="dueno-label">Dueño:</span>
+              <span class="dueno-value">{{ resolveNombreDueno(visita.idmascota) }}</span>
+            </div>
           </div>
 
           <!-- Card Content -->
@@ -130,6 +137,34 @@
                   <span style="font-weight:600; color:#fff">{{ trat.tipo }}</span>
                   <span style="color:#a55eea; font-weight:700">{{ formatoCOP(trat.costo || 45000) }}</span>
                 </div>
+              </div>
+            </div>
+
+            <!-- Estado de Pago -->
+            <div class="pago-section q-mt-md">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px">
+                <div style="font-size:12px; font-weight:700; color:rgba(255,255,255,0.6); text-transform:uppercase; letter-spacing:0.5px">Estado de Pago</div>
+                <q-badge
+                  :class="estadoPagoBadgeClass(visita.estado_pago)"
+                  class="pago-badge"
+                >
+                  <q-icon :name="estadoPagoIcon(visita.estado_pago)" size="12px" class="q-mr-xs" />
+                  {{ estadoPagoLabel(visita.estado_pago) }}
+                </q-badge>
+              </div>
+              <!-- Barra de progreso para abono -->
+              <div v-if="visita.estado_pago === 'abono' && visita.monto_abono > 0">
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:rgba(255,255,255,0.5); margin-bottom:4px">
+                  <span>Abonado: {{ formatoCOP(visita.monto_abono) }}</span>
+                  <span>Pendiente: {{ formatoCOP(Math.max(0, calcularCostoTotalVisita(visita) - visita.monto_abono)) }}</span>
+                </div>
+                <q-linear-progress
+                  :value="Math.min(1, visita.monto_abono / calcularCostoTotalVisita(visita))"
+                  color="amber-6"
+                  track-color="rgba(255,255,255,0.08)"
+                  rounded
+                  style="height:6px; border-radius:4px"
+                />
               </div>
             </div>
           </q-card-section>
@@ -224,11 +259,18 @@
           </q-select>
 
           <q-input
-            v-model="form.fechavisita"
-            label="Fecha de la consulta"
+            :model-value="form.fechavisita"
+            label="Fecha de la consulta (automática)"
             dark outlined dense class="vet-input"
-            type="date"
-          />
+            readonly
+          >
+            <template #prepend>
+              <q-icon name="lock" color="grey-6" size="16px" />
+            </template>
+            <template #append>
+              <q-icon name="event" color="grey-6" size="16px" />
+            </template>
+          </q-input>
           <q-input v-model="form.motivoconsulta" label="Motivo de consulta *" dark outlined dense class="vet-input" />
           <q-input v-model="form.diagnostico"    label="Diagnóstico médico"    dark outlined dense class="vet-input" type="textarea" autogrow />
           <q-input v-model="form.observaciones"  label="Observaciones adicionales" dark outlined dense class="vet-input" type="textarea" autogrow />
@@ -254,6 +296,38 @@
                 prefix="$"
               />
             </div>
+          </div>
+
+          <!-- Estado de Pago -->
+          <div class="q-mt-sm">
+            <div style="font-size:12px; color:rgba(255,255,255,0.5); margin-bottom:8px; font-weight:600">ESTADO DE PAGO</div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap">
+              <div
+                v-for="opt in opcionesPago"
+                :key="opt.value"
+                class="pago-opt-btn"
+                :class="{ 'pago-opt-active': form.estado_pago === opt.value, ['pago-opt-' + opt.value]: true }"
+                @click="form.estado_pago = opt.value; if(opt.value !== 'abono') form.monto_abono = 0"
+              >
+                <q-icon :name="opt.icon" size="16px" class="q-mr-xs" />
+                {{ opt.label }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Monto de Abono (solo cuando estado_pago === 'abono') -->
+          <div v-if="form.estado_pago === 'abono'" class="q-mt-sm">
+            <q-input
+              v-model.number="form.monto_abono"
+              label="Monto Abonado (COP)"
+              dark outlined dense class="vet-input"
+              type="number"
+              prefix="$"
+            >
+              <template #hint>
+                <span style="color:rgba(255,255,255,0.4)">Ingresa cuánto ha pagado el cliente hasta ahora</span>
+              </template>
+            </q-input>
           </div>
         </q-card-section>
 
@@ -293,12 +367,14 @@ import { useVisitasStore }      from '../stores/useVisitasStore.js'
 import { useMascotasStore }     from '../stores/useMascotasStore.js'
 import { useVeterinariosStore } from '../stores/useVeterinariosStore.js'
 import { useTratamientosStore } from '../stores/useTratamientosStore.js'
+import { useDuenosStore }       from '../stores/useDuenosStore.js'
 
 const $q = useQuasar()
 const visitasStore      = useVisitasStore()
 const mascotasStore     = useMascotasStore()
 const veterinariosStore = useVeterinariosStore()
 const tratamientosStore = useTratamientosStore()
+const duenosStore       = useDuenosStore()
 
 const dialog       = ref(false)
 const deleteDialog = ref(false)
@@ -308,11 +384,18 @@ const selectedId   = ref(null)
 const mascotasFiltradasOpts = ref([])
 const vetsFiltradosOpts     = ref([])
 
+const opcionesPago = [
+  { value: 'pagado',   label: 'Pagado',   icon: 'check_circle' },
+  { value: 'abono',    label: 'Abono',    icon: 'payments' },
+  { value: 'pendiente', label: 'Pendiente', icon: 'pending' },
+]
+
 const form = ref({
   idmascota:'', idveterinario:'',
   fechavisita: new Date().toISOString().slice(0,10),
   motivoconsulta:'', diagnostico:'', observaciones:'', pesoregistrado: null,
-  costo_consulta: 70000, costo_total: 70000
+  costo_consulta: 70000, costo_total: 70000,
+  estado_pago: 'pendiente', monto_abono: 0
 })
 
 function extractId(val) {
@@ -368,9 +451,10 @@ const visitasFiltradas = computed(() => {
   return visitasStore.visitas.filter(v => {
     const nombreMascota = resolveNombreMascota(v.idmascota).toLowerCase()
     const nombreVet     = resolveNombreVet(v.idveterinario).toLowerCase()
+    const nombreDueno   = resolveNombreDueno(v.idmascota).toLowerCase()
     const motivo        = (v.motivoconsulta || '').toLowerCase()
     const diag          = (v.diagnostico || '').toLowerCase()
-    return nombreMascota.includes(q) || nombreVet.includes(q) || motivo.includes(q) || diag.includes(q)
+    return nombreMascota.includes(q) || nombreVet.includes(q) || nombreDueno.includes(q) || motivo.includes(q) || diag.includes(q)
   })
 })
 
@@ -396,6 +480,55 @@ function resolveNombreVet(val) {
   const idStr = extractId(val)
   const v = veterinariosStore.veterinarios.find(item => extractId(item.idveterinario || item._id) === idStr)
   return v ? v.nombre : 'Veterinario'
+}
+
+function resolveNombreDueno(mascotaVal) {
+  // mascotaVal puede ser el objeto mascota populado (con iddueño populado) o un ID
+  if (!mascotaVal) return 'Sin dueño'
+
+  // Si la visita tiene la mascota populada con iddueño también populado
+  if (typeof mascotaVal === 'object') {
+    const duenoPop = mascotaVal['iddueño'] || mascotaVal.iddueño
+    if (duenoPop && typeof duenoPop === 'object' && duenoPop.nombre) return duenoPop.nombre
+    // Si iddueño es solo un ID, buscamos en el store
+    if (duenoPop) {
+      const idStr = typeof duenoPop === 'object'
+        ? (duenoPop._id || '').toString()
+        : duenoPop.toString()
+      const d = duenosStore.duenos.find(item => (item['iddueño'] || item._id)?.toString() === idStr)
+      return d ? d.nombre : 'Sin dueño'
+    }
+  }
+
+  // Si mascotaVal es un ID, busca la mascota en el store y luego el dueño
+  const idStr = extractId(mascotaVal)
+  const m = mascotasStore.mascotas.find(item => extractId(item.idmascota || item._id) === idStr)
+  if (!m) return 'Sin dueño'
+  const duenoPop = m['iddueño'] || m.iddueño
+  if (!duenoPop) return 'Sin dueño'
+  const duenIdStr = typeof duenoPop === 'object'
+    ? (duenoPop._id || '').toString()
+    : duenoPop.toString()
+  const d = duenosStore.duenos.find(item => (item['iddueño'] || item._id)?.toString() === duenIdStr)
+  return d ? d.nombre : 'Sin dueño'
+}
+
+function estadoPagoBadgeClass(estado) {
+  if (estado === 'pagado')   return 'badge-pagado'
+  if (estado === 'abono')    return 'badge-abono'
+  return 'badge-pendiente'
+}
+
+function estadoPagoIcon(estado) {
+  if (estado === 'pagado')   return 'check_circle'
+  if (estado === 'abono')    return 'payments'
+  return 'pending'
+}
+
+function estadoPagoLabel(estado) {
+  if (estado === 'pagado')   return 'Pagado'
+  if (estado === 'abono')    return 'Abono'
+  return 'Pendiente'
 }
 
 function obtenerTratamientosVisita(visita) {
@@ -427,13 +560,15 @@ function openDialog(row = null) {
     form.value = {
       idmascota: extractId(row.idmascota),
       idveterinario: extractId(row.idveterinario),
-      fechavisita: row.fechavisita ? new Date(row.fechavisita).toISOString().slice(0,10) : new Date().toISOString().slice(0,10),
+      fechavisita: new Date().toISOString().slice(0,10),
       motivoconsulta: row.motivoconsulta,
       diagnostico: row.diagnostico,
       observaciones: row.observaciones,
       pesoregistrado: row.pesoregistrado,
       costo_consulta: row.costo_consulta || 70000,
-      costo_total: row.costo_total || 70000
+      costo_total: row.costo_total || 70000,
+      estado_pago: row.estado_pago || 'pendiente',
+      monto_abono: row.monto_abono || 0
     }
     selectedId.value = row.idvisita || row._id
   } else {
@@ -441,7 +576,8 @@ function openDialog(row = null) {
       idmascota:'', idveterinario:'',
       fechavisita: new Date().toISOString().slice(0,10),
       motivoconsulta:'', diagnostico:'', observaciones:'', pesoregistrado: null,
-      costo_consulta: 70000, costo_total: 70000
+      costo_consulta: 70000, costo_total: 70000,
+      estado_pago: 'pendiente', monto_abono: 0
     }
     selectedId.value = null
   }
@@ -497,7 +633,8 @@ onMounted(async () => {
     visitasStore.fetchAll(),
     mascotasStore.fetchAll(),
     veterinariosStore.fetchAll(),
-    tratamientosStore.fetchAll()
+    tratamientosStore.fetchAll(),
+    duenosStore.fetchAll()
   ])
   mascotasFiltradasOpts.value = opcionesMascotas.value
   vetsFiltradosOpts.value     = opcionesVets.value
@@ -595,4 +732,40 @@ onMounted(async () => {
 .edit-btn:hover { background: rgba(38,222,129,0.15) !important; }
 .delete-btn { color: #ff6b6b !important; }
 .delete-btn:hover { background: rgba(255,107,107,0.15) !important; }
+
+/* Dueño row */
+.dueno-row {
+  display: flex; align-items: center; gap: 6px; font-size: 12px;
+  border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px; margin-top: 4px;
+}
+.dueno-label { color: rgba(255,255,255,0.45); font-weight: 500; }
+.dueno-value { color: #d4a0ff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+
+/* Pago section */
+.pago-section {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.pago-badge { font-size: 11px; padding: 4px 8px; border-radius: 8px; font-weight: 700; }
+.badge-pagado  { background: rgba(38,222,129,0.2) !important; color: #26de81 !important; border: 1px solid rgba(38,222,129,0.35) !important; }
+.badge-abono   { background: rgba(252,196,25,0.2) !important; color: #fcc419 !important; border: 1px solid rgba(252,196,25,0.35) !important; }
+.badge-pendiente { background: rgba(255,107,107,0.2) !important; color: #ff6b6b !important; border: 1px solid rgba(255,107,107,0.35) !important; }
+
+/* Payment option buttons in form */
+.pago-opt-btn {
+  display: flex; align-items: center; padding: 8px 14px; border-radius: 10px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.5);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+.pago-opt-btn:hover { border-color: rgba(255,255,255,0.25); color: #fff; }
+.pago-opt-active.pago-opt-pagado   { background: rgba(38,222,129,0.15); border-color: #26de81; color: #26de81; }
+.pago-opt-active.pago-opt-abono    { background: rgba(252,196,25,0.15); border-color: #fcc419; color: #fcc419; }
+.pago-opt-active.pago-opt-pendiente { background: rgba(255,107,107,0.15); border-color: #ff6b6b; color: #ff6b6b; }
+
 </style>

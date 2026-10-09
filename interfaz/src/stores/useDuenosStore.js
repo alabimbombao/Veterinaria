@@ -13,14 +13,23 @@ export const useDuenosStore = defineStore('duenos', {
 
   // ─── Getters ───────────────────────────────────────────
   getters: {
-    total:      (state) => state.duenos.length,
-    activos:    (state) => state.duenos.filter(d => d.estado !== false),
-    getById:    (state) => (id) =>
+    total:        (state) => state.duenos.length,
+    activos:      (state) => state.duenos.filter(d => d.estado !== false),
+    inactivos:    (state) => state.duenos.filter(d => d.estado === false),
+    totalActivos: (state) => state.duenos.filter(d => d.estado !== false).length,
+    totalInactivos: (state) => state.duenos.filter(d => d.estado === false).length,
+    getById:      (state) => (id) =>
       state.duenos.find(d => (d.iddueño || d._id)?.toString() === id?.toString()),
-    filtrados:  (state) => (q) => {
-      if (!q) return state.duenos
+    filtrados:    (state) => (q, filtroEstado = 'activos') => {
+      let lista = state.duenos
+      if (filtroEstado === 'activos') {
+        lista = lista.filter(d => d.estado !== false)
+      } else if (filtroEstado === 'inactivos') {
+        lista = lista.filter(d => d.estado === false)
+      }
+      if (!q) return lista
       const term = q.toLowerCase()
-      return state.duenos.filter(d =>
+      return lista.filter(d =>
         d.nombre?.toLowerCase().includes(term) ||
         d.email?.toLowerCase().includes(term)  ||
         d.telefono?.toLowerCase().includes(term)
@@ -34,7 +43,7 @@ export const useDuenosStore = defineStore('duenos', {
       this.loading = true
       this.error   = null
       try {
-        const data = await duenosAPI.getAll()
+        const data = await duenosAPI.getAll({ incluirInactivos: true })
         this.duenos = Array.isArray(data)
           ? data
           : (Object.values(data).find(v => Array.isArray(v)) || [])

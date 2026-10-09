@@ -12,7 +12,7 @@ const getVisitas = async (req = request, res = response) => {
         const [total, visitas] = await Promise.all([
             Visita.countDocuments(query),
             Visita.find(query)
-                .populate('idmascota', 'nombre especie raza')
+                .populate({ path: 'idmascota', select: 'nombre especie raza iddueño', populate: { path: 'iddueño', select: 'nombre telefono email' } })
                 .populate('idveterinario', 'nombre especialidad')
                 .skip(Number(desde))
                 .limit(Number(limite))
@@ -37,7 +37,7 @@ const getVisitaById = async (req = request, res = response) => {
     try {
         const { id } = req.params;
         const visita = await Visita.findById(id)
-            .populate('idmascota', 'nombre especie raza')
+            .populate({ path: 'idmascota', select: 'nombre especie raza iddueño', populate: { path: 'iddueño', select: 'nombre telefono email' } })
             .populate('idveterinario', 'nombre especialidad');
 
         if (!visita || !visita.estado) {
@@ -63,7 +63,7 @@ const getVisitaById = async (req = request, res = response) => {
 // Crear nueva visita
 const crearVisita = async (req = request, res = response) => {
     try {
-        const { idmascota, idveterinario, fechavisita, motivoconsulta, diagnostico, observaciones, pesoregistrado, costo_consulta, costo_total } = req.body;
+        const { idmascota, idveterinario, fechavisita, motivoconsulta, diagnostico, observaciones, pesoregistrado, costo_consulta, costo_total, estado_pago, monto_abono } = req.body;
 
         // Verificar que la mascota exista
         const mascotaExiste = await Mascota.findById(idmascota);
@@ -95,7 +95,9 @@ const crearVisita = async (req = request, res = response) => {
             observaciones,
             pesoregistrado,
             costo_consulta: tarifaVet,
-            costo_total: costoTot
+            costo_total: costoTot,
+            estado_pago: estado_pago || 'pendiente',
+            monto_abono: monto_abono || 0
         });
 
         await visita.save();
@@ -141,7 +143,7 @@ const actualizarVisita = async (req = request, res = response) => {
         }
 
         const visita = await Visita.findByIdAndUpdate(id, data, { new: true })
-            .populate('idmascota', 'nombre especie raza')
+            .populate({ path: 'idmascota', select: 'nombre especie raza iddueño', populate: { path: 'iddueño', select: 'nombre telefono email' } })
             .populate('idveterinario', 'nombre especialidad');
 
         if (!visita || !visita.estado) {

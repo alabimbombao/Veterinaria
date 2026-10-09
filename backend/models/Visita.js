@@ -40,6 +40,15 @@ const VisitaSchema = new Schema(
             type: Number,
             default: 70000
         },
+        estado_pago: {
+            type: String,
+            enum: ['pagado', 'abono', 'pendiente'],
+            default: 'pendiente'
+        },
+        monto_abono: {
+            type: Number,
+            default: 0
+        },
         estado: {
             type: Boolean,
             default: true

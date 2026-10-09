@@ -1,4 +1,5 @@
 require('dotenv').config();
+const mongoose = require('mongoose');
 const { dbConnection } = require('./backend/database/config');
 
 const Dueno = require('./backend/models/dueño');
@@ -108,7 +109,58 @@ const plantillasMascotas = [
     { nombre: 'Kiwi', especie: 'Ave', raza: 'Perico Australiano', edad_aprox: 2, peso_actual: 0.04 },
     { nombre: 'Samba', especie: 'Perro', raza: 'Weimaraner', edad_aprox: 3, peso_actual: 30.2 },
     { nombre: 'Manchas', especie: 'Gato', raza: 'Mestizo Calicó', edad_aprox: 2, peso_actual: 4.3 },
-    { nombre: 'Toby Jr.', especie: 'Perro', raza: 'Basset Hound', edad_aprox: 4, peso_actual: 25.4 }
+    { nombre: 'Toby Jr.', especie: 'Perro', raza: 'Basset Hound', edad_aprox: 4, peso_actual: 25.4 },
+    // --- Segunda tanda (duplicado con variaciones) ---
+    { nombre: 'Zara', especie: 'Perro', raza: 'Golden Retriever', edad_aprox: 2, peso_actual: 28.0 },
+    { nombre: 'Nube', especie: 'Gato', raza: 'Persa', edad_aprox: 3, peso_actual: 4.5 },
+    { nombre: 'Rex', especie: 'Perro', raza: 'Pastor Alemán', edad_aprox: 5, peso_actual: 37.2 },
+    { nombre: 'Candy', especie: 'Perro', raza: 'French Poodle', edad_aprox: 2, peso_actual: 7.8 },
+    { nombre: 'Hulk', especie: 'Perro', raza: 'Bulldog Francés', edad_aprox: 4, peso_actual: 12.5 },
+    { nombre: 'Perla', especie: 'Gato', raza: 'Siamés', edad_aprox: 2, peso_actual: 3.6 },
+    { nombre: 'Atlas', especie: 'Perro', raza: 'Rottweiler', edad_aprox: 2, peso_actual: 40.0 },
+    { nombre: 'Cleo', especie: 'Gato', raza: 'Maine Coon', edad_aprox: 3, peso_actual: 6.8 },
+    { nombre: 'Bolt', especie: 'Perro', raza: 'Beagle', edad_aprox: 1, peso_actual: 10.5 },
+    { nombre: 'Mochi', especie: 'Gato', raza: 'Mestizo', edad_aprox: 2, peso_actual: 4.7 },
+    { nombre: 'Copper', especie: 'Perro', raza: 'Labrador Retriever', edad_aprox: 3, peso_actual: 31.0 },
+    { nombre: 'Nyx', especie: 'Perro', raza: 'Siberian Husky', edad_aprox: 1, peso_actual: 19.5 },
+    { nombre: 'Ares', especie: 'Perro', raza: 'Doberman', edad_aprox: 3, peso_actual: 36.0 },
+    { nombre: 'Blanca', especie: 'Gato', raza: 'Angora', edad_aprox: 4, peso_actual: 4.2 },
+    { nombre: 'Bunny', especie: 'Conejo', raza: 'Belier Holandés', edad_aprox: 2, peso_actual: 2.0 },
+    { nombre: 'Cookie', especie: 'Gato', raza: 'Mestizo', edad_aprox: 1, peso_actual: 3.9 },
+    { nombre: 'Toffy', especie: 'Perro', raza: 'Jack Russell Terrier', edad_aprox: 2, peso_actual: 7.0 },
+    { nombre: 'Brutus', especie: 'Perro', raza: 'Boxer', edad_aprox: 5, peso_actual: 29.5 },
+    { nombre: 'Mia', especie: 'Gato', raza: 'Bengalí', edad_aprox: 1, peso_actual: 4.1 },
+    { nombre: 'Pitu', especie: 'Ave', raza: 'Loro Amazónico', edad_aprox: 6, peso_actual: 0.42 },
+    { nombre: 'Frodo', especie: 'Perro', raza: 'Shih Tzu', edad_aprox: 4, peso_actual: 6.0 },
+    { nombre: 'Leia', especie: 'Perro', raza: 'Border Collie', edad_aprox: 2, peso_actual: 17.5 },
+    { nombre: 'Nermal', especie: 'Gato', raza: 'Exótico de Pelo Corto', edad_aprox: 5, peso_actual: 5.9 },
+    { nombre: 'Otto', especie: 'Perro', raza: 'Dachshund (Teckel)', edad_aprox: 3, peso_actual: 9.8 },
+    { nombre: 'Peanut', especie: 'Hámster', raza: 'Sirio', edad_aprox: 1, peso_actual: 0.15 },
+    { nombre: 'Chispa', especie: 'Perro', raza: 'Cocker Spaniel', edad_aprox: 3, peso_actual: 13.5 },
+    { nombre: 'Salem', especie: 'Gato', raza: 'Sphynx (Sin pelo)', edad_aprox: 3, peso_actual: 3.8 },
+    { nombre: 'Goliath', especie: 'Perro', raza: 'Gran Danés', edad_aprox: 2, peso_actual: 50.0 },
+    { nombre: 'Pixy', especie: 'Perro', raza: 'Chihuahua', edad_aprox: 1, peso_actual: 2.1 },
+    { nombre: 'Mittens', especie: 'Gato', raza: 'Azul Ruso', edad_aprox: 4, peso_actual: 4.6 },
+    { nombre: 'Peppa', especie: 'Perro', raza: 'Schnauzer Miniatura', edad_aprox: 4, peso_actual: 7.2 },
+    { nombre: 'Fluffy', especie: 'Conejo', raza: 'Cabeza de León', edad_aprox: 1, peso_actual: 1.6 },
+    { nombre: 'Panda', especie: 'Perro', raza: 'Pomerania', edad_aprox: 2, peso_actual: 2.3 },
+    { nombre: 'Winston', especie: 'Gato', raza: 'British Shorthair', edad_aprox: 5, peso_actual: 5.8 },
+    { nombre: 'Churro', especie: 'Perro', raza: 'Pug', edad_aprox: 4, peso_actual: 9.2 },
+    { nombre: 'Dulce', especie: 'Gato', raza: 'Ragdoll', edad_aprox: 1, peso_actual: 4.0 },
+    { nombre: 'Balto', especie: 'Perro', raza: 'Samoyedo', edad_aprox: 2, peso_actual: 22.0 },
+    { nombre: 'Fenrir', especie: 'Perro', raza: 'Akita Inu', edad_aprox: 3, peso_actual: 30.5 },
+    { nombre: 'Canela', especie: 'Gato', raza: 'Abisinio', edad_aprox: 3, peso_actual: 4.3 },
+    { nombre: 'Loro', especie: 'Ave', raza: 'Calopsita (Ninfa)', edad_aprox: 2, peso_actual: 0.10 },
+    { nombre: 'Spike', especie: 'Perro', raza: 'Bull Terrier', edad_aprox: 3, peso_actual: 25.0 },
+    { nombre: 'Penny', especie: 'Perro', raza: 'Dalmata', edad_aprox: 2, peso_actual: 20.5 },
+    { nombre: 'Freya', especie: 'Gato', raza: 'Bosque de Noruega', edad_aprox: 4, peso_actual: 6.2 },
+    { nombre: 'Nugget', especie: 'Hámster', raza: 'Ruso', edad_aprox: 1, peso_actual: 0.06 },
+    { nombre: 'Duke', especie: 'Perro', raza: 'American Pitbull Terrier', edad_aprox: 3, peso_actual: 27.5 },
+    { nombre: 'Coco', especie: 'Perro', raza: 'Bichon Frisé', edad_aprox: 3, peso_actual: 5.5 },
+    { nombre: 'Verde', especie: 'Ave', raza: 'Perico Australiano', edad_aprox: 1, peso_actual: 0.038 },
+    { nombre: 'Bruno', especie: 'Perro', raza: 'Weimaraner', edad_aprox: 2, peso_actual: 28.7 },
+    { nombre: 'Sombra', especie: 'Gato', raza: 'Mestizo Calicó', edad_aprox: 1, peso_actual: 3.9 },
+    { nombre: 'Daisy', especie: 'Perro', raza: 'Basset Hound', edad_aprox: 3, peso_actual: 24.1 }
 ];
 
 const motivosYDiagnosticos = [
@@ -185,10 +237,10 @@ async function seedDB() {
         console.log(`✅ ${mascotasInsertadas.length} mascotas insertadas.`);
 
         // 4. Insertar Visitas y Tratamientos vinculados con cálculo de precios reales en COP
-        console.log('🩺 Insertando historial de visitas médicas y tratamientos...');
-        let totalVisitas = 0;
-        let totalTratamientos = 0;
+        console.log('🩺 Preparando e insertando historial de visitas médicas y tratamientos en lote...');
         const hoy = new Date();
+        const visitasAInsertar = [];
+        const tratamientosAInsertar = [];
 
         for (let index = 0; index < mascotasInsertadas.length; index++) {
             const mascota = mascotasInsertadas[index];
@@ -204,20 +256,12 @@ async function seedDB() {
 
                 const tarifaConsulta = vet.costo_consulta || 70000;
 
-                const nuevaVisita = new Visita({
-                    idmascota: mascota._id,
-                    idveterinario: vet._id,
-                    fechavisita: fechaVisita,
-                    motivoconsulta: comboMD.motivo,
-                    diagnostico: comboMD.diagnostico,
-                    observaciones: comboMD.obs,
-                    pesoregistrado: pesoReg > 0 ? pesoReg : mascota.peso_actual,
-                    costo_consulta: tarifaConsulta,
-                    costo_total: tarifaConsulta
-                });
+                const estadosPago = ['pagado', 'abono', 'pendiente'];
+                const estadoPago = estadosPago[(index + v) % 3];
+                const montoAbono = estadoPago === 'abono' ? Math.round((tarifaConsulta * (0.3 + (index % 5) * 0.1))) : 0;
 
-                await nuevaVisita.save();
-                totalVisitas++;
+                // Generar ID de visita con mongoose
+                const visitaId = new mongoose.Types.ObjectId();
 
                 // Generar 1 o 2 tratamientos asociados a esta visita
                 const numTratamientos = 1 + ((index + v) % 2);
@@ -228,8 +272,8 @@ async function seedDB() {
                     const diasProxima = 15 + ((index + v + t) % 30);
                     const proximaFecha = new Date(fechaVisita.getTime() + diasProxima * 24 * 60 * 60 * 1000);
 
-                    const nuevoTratamiento = new Tratamiento({
-                        idvisita: nuevaVisita._id,
+                    tratamientosAInsertar.push({
+                        idvisita: visitaId,
                         tipo: infoTrat.tipo,
                         descripcion: infoTrat.desc,
                         dosis_indicaciones: infoTrat.dosis,
@@ -237,18 +281,31 @@ async function seedDB() {
                         proxima_fecha: proximaFecha
                     });
 
-                    await nuevoTratamiento.save();
                     costoTratamientosVisita += infoTrat.costo;
-                    totalTratamientos++;
                 }
 
-                nuevaVisita.costo_total = tarifaConsulta + costoTratamientosVisita;
-                await nuevaVisita.save();
+                visitasAInsertar.push({
+                    _id: visitaId,
+                    idmascota: mascota._id,
+                    idveterinario: vet._id,
+                    fechavisita: fechaVisita,
+                    motivoconsulta: comboMD.motivo,
+                    diagnostico: comboMD.diagnostico,
+                    observaciones: comboMD.obs,
+                    pesoregistrado: pesoReg > 0 ? pesoReg : mascota.peso_actual,
+                    costo_consulta: tarifaConsulta,
+                    costo_total: tarifaConsulta + costoTratamientosVisita,
+                    estado_pago: estadoPago,
+                    monto_abono: montoAbono
+                });
             }
         }
 
-        console.log(`✅ ${totalVisitas} visitas médicas insertadas.`);
-        console.log(`✅ ${totalTratamientos} tratamientos insertados.`);
+        const visitasInsertadas = await Visita.insertMany(visitasAInsertar);
+        const tratamientosInsertados = await Tratamiento.insertMany(tratamientosAInsertar);
+
+        const totalVisitas = visitasInsertadas.length;
+        const totalTratamientos = tratamientosInsertados.length;
 
         console.log('\n===============================================================');
         console.log('🎉 BASE DE DATOS POBLADA EXITOSAMENTE CON UN GRAN VOLUMEN DE DATOS (COP):');

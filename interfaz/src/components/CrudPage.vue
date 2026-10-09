@@ -12,13 +12,16 @@
           <p class="page-sub">{{ subtitle }}</p>
         </div>
       </div>
-      <q-btn
-        unelevated
-        :label="addLabel"
-        icon="add"
-        class="add-btn"
-        @click="$emit('add')"
-      />
+      <div style="display:flex;align-items:center;gap:12px">
+        <slot name="header-extra" />
+        <q-btn
+          unelevated
+          :label="addLabel"
+          icon="add"
+          class="add-btn"
+          @click="$emit('add')"
+        />
+      </div>
     </div>
 
     <!-- Search + Filters -->
@@ -39,6 +42,7 @@
           <q-icon name="close" color="grey-6" class="cursor-pointer" @click="search = ''; $emit('search', '')" />
         </template>
       </q-input>
+      <slot name="search-extra" />
     </div>
 
     <!-- Table -->
@@ -58,8 +62,13 @@
           <q-inner-loading showing color="purple" />
         </template>
 
-        <!-- Actions column -->
-        <template #body-cell-acciones="props">
+        <!-- Dynamic slot forwarding for table cells -->
+        <template v-for="(_, name) in $slots" :key="name" #[name]="slotProps">
+          <slot :name="name" v-bind="slotProps || {}" />
+        </template>
+
+        <!-- Actions column default -->
+        <template #body-cell-acciones="props" v-if="!$slots['body-cell-acciones']">
           <q-td :props="props" class="actions-cell">
             <q-btn
               flat round dense
@@ -71,6 +80,7 @@
               <q-tooltip>Editar</q-tooltip>
             </q-btn>
             <q-btn
+              v-if="showDelete"
               flat round dense
               icon="delete"
               size="sm"
@@ -82,8 +92,8 @@
           </q-td>
         </template>
 
-        <!-- Status badge -->
-        <template #body-cell-estado="props">
+        <!-- Status badge default -->
+        <template #body-cell-estado="props" v-if="!$slots['body-cell-estado']">
           <q-td :props="props">
             <q-badge
               :label="props.value ? 'Activo' : 'Inactivo'"
@@ -113,6 +123,7 @@ defineProps({
   columns:      { type: Array, default: () => [] },
   loading:      { type: Boolean, default: false },
   noDataLabel:  { type: String, default: 'Sin registros' },
+  showDelete:   { type: Boolean, default: true },
 })
 
 defineEmits(['add', 'edit', 'delete', 'search'])
