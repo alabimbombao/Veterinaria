@@ -114,8 +114,8 @@
           <q-input v-model="form.especialidad" label="Especialidad" dark outlined dense class="vet-input" />
           <q-input v-model.number="form.costo_consulta" label="Tarifa Consulta (COP)" dark outlined dense class="vet-input" type="number" prefix="$" />
 
-          <!-- Switch para Estado en Formulario -->
-          <div class="estado-selector-box q-mt-md">
+          <!-- Switch para Estado en Formulario (solo en modo edición) -->
+          <div v-if="selectedId" class="estado-selector-box q-mt-md">
             <div>
               <div style="font-size:13px; font-weight:700; color:#fff">Estado del Veterinario</div>
               <div style="font-size:11px; color:rgba(255,255,255,0.5)">{{ form.estado !== false ? 'Disponible para atender consultas' : 'Inactivo (No asignable a visitas)' }}</div>

@@ -241,8 +241,52 @@
         <q-separator color="rgba(255,255,255,0.08)" />
         <q-card-section class="q-pa-lg q-gutter-sm">
           <q-input v-model="form.nombre"       label="Nombre *"          dark outlined dense class="vet-input" />
-          <q-input v-model="form.especie"      label="Especie *"          dark outlined dense class="vet-input" />
-          <q-input v-model="form.raza"         label="Raza"               dark outlined dense class="vet-input" />
+
+          <!-- Select Especie -->
+          <q-select
+            v-model="form.especie"
+            :options="opcionesEspecie"
+            label="Especie *"
+            dark outlined dense class="vet-input"
+            popup-content-class="vet-select-popup"
+            emit-value map-options
+            @update:model-value="onEspecieChange"
+          />
+          <!-- Input personalizado si especie = Otros -->
+          <q-input
+            v-if="form.especie === '__otros__'"
+            v-model="form.especieOtros"
+            label="Especificar especie *"
+            dark outlined dense class="vet-input"
+            placeholder="Escribe la especie..."
+          >
+            <template #prepend>
+              <q-icon name="edit" color="amber-4" size="18px" />
+            </template>
+          </q-input>
+
+          <!-- Select Raza (dinámico según especie) -->
+          <q-select
+            v-model="form.raza"
+            :options="opcionesRaza"
+            label="Raza"
+            dark outlined dense class="vet-input"
+            popup-content-class="vet-select-popup"
+            emit-value map-options
+          />
+          <!-- Input personalizado si raza = Otros -->
+          <q-input
+            v-if="form.raza === '__otros__'"
+            v-model="form.razaOtros"
+            label="Especificar raza *"
+            dark outlined dense class="vet-input"
+            placeholder="Escribe la raza..."
+          >
+            <template #prepend>
+              <q-icon name="edit" color="amber-4" size="18px" />
+            </template>
+          </q-input>
+
           <q-input v-model="form.edad_aprox"   label="Edad aproximada (años)" dark outlined dense class="vet-input" type="number" />
           <q-input v-model="form.peso_actual"  label="Peso actual (kg)"   dark outlined dense class="vet-input" type="number" step="0.1" />
           
@@ -344,8 +388,54 @@ const vetsFiltradosOpts   = ref([])
 
 const form = ref({
   nombre:'', especie:'', raza:'', edad_aprox:'',
-  peso_actual:'', 'iddueño': null, idveterinario: null
+  peso_actual:'', 'iddueño': null, idveterinario: null,
+  especieOtros: '', razaOtros: ''
 })
+
+// ─── Catálogo de Especies y Razas ─────────────────────
+const catalogoEspecies = [
+  'Perro', 'Gato', 'Conejo', 'Hámster', 'Cobaya / Curí', 'Hurón',
+  'Aves', 'Tortuga de tierra', 'Iguana', 'Erizo de tierra',
+  'Rata doméstica', 'Ratón doméstico', 'Chinchilla', 'Cerdo vietnamita / Minipig'
+]
+
+const catalogoRazas = {
+  'Perro': ['Labrador Retriever', 'Pastor Alemán', 'Golden Retriever', 'Bulldog Francés', 'Poodle / Caniche', 'Beagle', 'Husky Siberiano', 'Chihuahua', 'Boxer', 'Border Collie'],
+  'Gato': ['Persa', 'Maine Coon', 'Siamés', 'British Shorthair', 'Ragdoll', 'Bengalí', 'Esfinge (Sphynx)', 'Angora Turco', 'Azul Ruso', 'American Shorthair'],
+  'Conejo': ['Cabeza de León', 'Belier / Lop', 'Angora', 'Mini Lop', 'Netherland Dwarf / Enano Holandés', 'Rex', 'Californiano', 'Nueva Zelanda'],
+  'Hámster': ['Sirio / Dorado', 'Ruso / Campbell', 'Winter White / Blanco de Invierno', 'Roborovski', 'Chino'],
+  'Cobaya / Curí': ['Abisinia', 'Americana / Inglesa', 'Peruana', 'Teddy', 'Sheltie / Silkie', 'Skinny'],
+  'Hurón': ['Sable', 'Albino', 'Blanco de ojos oscuros (DEW)', 'Champán / Canela', 'Silver / Plateado', 'Blaze'],
+  'Aves': ['Periquito', 'Canario'],
+  'Tortuga de tierra': ['Tortuga rusa', 'Tortuga de espolones africana', 'Tortuga mediterránea', 'Tortuga mora', 'Tortuga gigante de Oregón'],
+  'Iguana': ['Iguana verde', 'Iguana del Caribe', 'Iguana rinoceronte', 'Iguana de Chuckwalla'],
+  'Erizo de tierra': ['Erizo pigmeo africano', 'Erizo moruno', 'Erizo orejuno', 'Erizo europeo'],
+  'Rata doméstica': ['Standard', 'Rex', 'Dumbo', 'Hairless (Sin pelo)', 'Manx (Sin cola)'],
+  'Ratón doméstico': ['Standard', 'Satin', 'Longhair (Pelo largo)', 'Hairless (Sin pelo)'],
+  'Chinchilla': ['Standard (Gris estándar)', 'Black Velvet', 'Beige', 'Albina / Blanca', 'Violeta'],
+  'Cerdo vietnamita / Minipig': ['Minipig Gottingen', 'Juliani', 'Kunekune', 'Yucatan Micro Pig']
+}
+
+const opcionesEspecie = computed(() => {
+  const opts = catalogoEspecies.map(e => ({ label: e, value: e }))
+  opts.push({ label: '── Otros ──', value: '__otros__' })
+  return opts
+})
+
+const opcionesRaza = computed(() => {
+  const especie = form.value.especie
+  const razas = (especie && especie !== '__otros__') ? (catalogoRazas[especie] || []) : []
+  const opts = razas.map(r => ({ label: r, value: r }))
+  opts.push({ label: '── Otros ──', value: '__otros__' })
+  return opts
+})
+
+function onEspecieChange() {
+  // Resetear raza al cambiar especie
+  form.value.raza = ''
+  form.value.razaOtros = ''
+  form.value.especieOtros = ''
+}
 
 function extractId(val) {
   if (!val) return null
@@ -458,15 +548,33 @@ function verDetalle(row) {
   detalleDialog.value = true
 }
 
+/** Determina si una especie/raza existente pertenece al catálogo o es personalizada */
+function resolveEspecieForForm(especie) {
+  if (!especie) return { especie: '', especieOtros: '' }
+  if (catalogoEspecies.includes(especie)) return { especie, especieOtros: '' }
+  return { especie: '__otros__', especieOtros: especie }
+}
+
+function resolveRazaForForm(raza, especie) {
+  if (!raza) return { raza: '', razaOtros: '' }
+  const razasDeEspecie = catalogoRazas[especie] || []
+  if (razasDeEspecie.includes(raza)) return { raza, razaOtros: '' }
+  return { raza: '__otros__', razaOtros: raza }
+}
+
 function openDialog(row = null) {
   duenosFiltradosOpts.value = opcionesDuenos.value
   vetsFiltradosOpts.value   = opcionesVets.value
 
   if (row) {
+    const especieRes = resolveEspecieForForm(row.especie)
+    const razaRes = resolveRazaForForm(row.raza, row.especie)
     form.value = {
       nombre: row.nombre,
-      especie: row.especie,
-      raza: row.raza,
+      especie: especieRes.especie,
+      especieOtros: especieRes.especieOtros,
+      raza: razaRes.raza,
+      razaOtros: razaRes.razaOtros,
       edad_aprox: row.edad_aprox,
       peso_actual: row.peso_actual,
       'iddueño': extractId(row['iddueño']),
@@ -474,23 +582,38 @@ function openDialog(row = null) {
     }
     selectedId.value = row.idmascota || row._id
   } else {
-    form.value = { nombre:'', especie:'', raza:'', edad_aprox:'', peso_actual:'', 'iddueño': null, idveterinario: null }
+    form.value = { nombre:'', especie:'', raza:'', edad_aprox:'', peso_actual:'', 'iddueño': null, idveterinario: null, especieOtros: '', razaOtros: '' }
     selectedId.value = null
   }
   dialog.value = true
 }
 
 async function guardar() {
-  if (!form.value.nombre || !form.value.especie || !form.value['iddueño']) {
+  // Resolver valores finales de especie y raza
+  const especieFinal = form.value.especie === '__otros__' ? form.value.especieOtros : form.value.especie
+  const razaFinal = form.value.raza === '__otros__' ? form.value.razaOtros : form.value.raza
+
+  if (!form.value.nombre || !especieFinal || !form.value['iddueño']) {
     $q.notify({ type:'warning', message:'Nombre, especie y dueño son obligatorios' })
     return
   }
+
+  const payload = {
+    nombre: form.value.nombre,
+    especie: especieFinal,
+    raza: razaFinal,
+    edad_aprox: form.value.edad_aprox,
+    peso_actual: form.value.peso_actual,
+    'iddueño': form.value['iddueño'],
+    idveterinario: form.value.idveterinario
+  }
+
   try {
     if (selectedId.value) {
-      await mascotasStore.actualizar(selectedId.value, form.value)
+      await mascotasStore.actualizar(selectedId.value, payload)
       $q.notify({ type:'positive', message:'Mascota actualizada' })
     } else {
-      await mascotasStore.crear(form.value)
+      await mascotasStore.crear(payload)
       $q.notify({ type:'positive', message:'Mascota creada' })
     }
     dialog.value = false

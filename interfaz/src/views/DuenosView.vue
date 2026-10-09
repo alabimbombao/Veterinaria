@@ -108,8 +108,8 @@
           <q-input v-model="form.telefono"  label="Teléfono"   dark outlined dense class="vet-input" />
           <q-input v-model="form.direccion" label="Dirección"  dark outlined dense class="vet-input" />
           
-          <!-- Selección Activo / Inactivo -->
-          <div class="estado-selector-box q-mt-md">
+          <!-- Selección Activo / Inactivo (solo en modo edición) -->
+          <div v-if="selectedId" class="estado-selector-box q-mt-md">
             <div class="text-subtitle2 text-grey-4 flex items-center">
               <q-icon :name="form.estado ? 'check_circle' : 'pause_circle'" :color="form.estado ? 'positive' : 'amber-8'" class="q-mr-xs" size="18px" />
               Estado del Dueño
