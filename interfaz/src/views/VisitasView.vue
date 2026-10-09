@@ -412,11 +412,18 @@ const opcionesMascotas = computed(() => {
 })
 
 const opcionesVets = computed(() => {
-  return veterinariosStore.veterinarios.map(v => ({
-    label: `${v.nombre} (${formatoCOP(v.costo_consulta || 70000)})`,
-    value: v.idveterinario || v._id,
-    costo: v.costo_consulta || 70000
-  }))
+  const currentSelectedId = extractId(form.value.idveterinario)
+  return veterinariosStore.veterinarios
+    .filter(v => v.estado !== false || extractId(v.idveterinario || v._id) === currentSelectedId)
+    .map(v => {
+      const isInactivo = v.estado === false
+      return {
+        label: isInactivo ? `${v.nombre} (INACTIVO — No disponible)` : `${v.nombre} (${formatoCOP(v.costo_consulta || 70000)})`,
+        value: v.idveterinario || v._id,
+        costo: v.costo_consulta || 70000,
+        disable: isInactivo
+      }
+    })
 })
 
 function filterMascotas(val, update) {
@@ -589,6 +596,18 @@ async function guardar() {
     $q.notify({ type:'warning', message: 'Mascota, veterinario y motivo son obligatorios' })
     return
   }
+
+  // Validación extra: Verificar que el veterinario no esté inactivo
+  const vetObj = veterinariosStore.getById(form.value.idveterinario)
+  if (vetObj && vetObj.estado === false) {
+    $q.notify({
+      type: 'negative',
+      message: `El veterinario "${vetObj.nombre}" está inactivo y no se le pueden asignar visitas.`,
+      icon: 'pause_circle_filled'
+    })
+    return
+  }
+
   try {
     if (selectedId.value) {
       await visitasStore.actualizar(selectedId.value, form.value)

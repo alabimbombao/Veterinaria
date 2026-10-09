@@ -1,11 +1,11 @@
 const { response, request } = require('express');
 const Veterinario = require('../models/Veterinario');
 
-// Obtener todos los veterinarios activos
+// Obtener todos los veterinarios (activos o todos)
 const getVeterinarios = async (req = request, res = response) => {
     try {
-        const { limite = 10000, desde = 0 } = req.query;
-        const query = { estado: true };
+        const { limite = 10000, desde = 0, incluirInactivos, todos } = req.query;
+        const query = (incluirInactivos === 'true' || todos === 'true' || incluirInactivos === true) ? {} : { estado: true };
 
         const [total, veterinarios] = await Promise.all([
             Veterinario.countDocuments(query),
@@ -34,7 +34,7 @@ const getVeterinarioById = async (req = request, res = response) => {
         const { id } = req.params;
         const veterinario = await Veterinario.findById(id);
 
-        if (!veterinario || !veterinario.estado) {
+        if (!veterinario) {
             return res.status(404).json({
                 ok: false,
                 msg: 'Veterinario no encontrado'
@@ -57,9 +57,14 @@ const getVeterinarioById = async (req = request, res = response) => {
 // Crear nuevo veterinario
 const crearVeterinario = async (req = request, res = response) => {
     try {
-        const { nombre, especialidad, costo_consulta } = req.body;
+        const { nombre, especialidad, costo_consulta, estado } = req.body;
 
-        const veterinario = new Veterinario({ nombre, especialidad, costo_consulta });
+        const veterinario = new Veterinario({
+            nombre,
+            especialidad,
+            costo_consulta,
+            estado: estado !== undefined ? estado : true
+        });
         await veterinario.save();
 
         res.status(201).json({
@@ -80,11 +85,11 @@ const crearVeterinario = async (req = request, res = response) => {
 const actualizarVeterinario = async (req = request, res = response) => {
     try {
         const { id } = req.params;
-        const { _id, estado, ...data } = req.body;
+        const { _id, idveterinario, ...data } = req.body;
 
         const veterinario = await Veterinario.findByIdAndUpdate(id, data, { new: true });
 
-        if (!veterinario || !veterinario.estado) {
+        if (!veterinario) {
             return res.status(404).json({
                 ok: false,
                 msg: 'Veterinario no encontrado'

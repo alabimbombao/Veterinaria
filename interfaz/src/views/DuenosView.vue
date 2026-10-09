@@ -35,6 +35,8 @@
         <q-btn-toggle
           v-model="filtroEstado"
           toggle-color="primary"
+          toggle-text-color="white"
+          text-color="grey-4"
           dark
           dense
           unelevated
@@ -330,9 +332,31 @@ onMounted(() => store.fetchAll())
 
 .vet-toggle-group {
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
   overflow: hidden;
+  padding: 2px;
+}
+
+.vet-toggle-group :deep(.q-btn) {
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+  padding: 6px 14px;
+  color: rgba(255, 255, 255, 0.75) !important;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+}
+
+.vet-toggle-group :deep(.q-btn:hover) {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+}
+
+.vet-toggle-group :deep(.q-btn.bg-primary) {
+  background: linear-gradient(135deg, #2563eb, #3b82f6) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
 }
 
 .status-chip {

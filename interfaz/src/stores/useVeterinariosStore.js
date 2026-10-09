@@ -13,19 +13,30 @@ export const useVeterinariosStore = defineStore('veterinarios', {
 
   // ─── Getters ───────────────────────────────────────────
   getters: {
-    total:   (state) => state.veterinarios.length,
-    activos: (state) => state.veterinarios.filter(v => v.estado !== false),
-    getById: (state) => (id) =>
+    total:          (state) => state.veterinarios.length,
+    activos:        (state) => state.veterinarios.filter(v => v.estado !== false),
+    inactivos:      (state) => state.veterinarios.filter(v => v.estado === false),
+    totalActivos:   (state) => state.veterinarios.filter(v => v.estado !== false).length,
+    totalInactivos: (state) => state.veterinarios.filter(v => v.estado === false).length,
+    getById:        (state) => (id) =>
       state.veterinarios.find(v => (v.idveterinario || v._id)?.toString() === id?.toString()),
-    /** Opciones para q-select */
-    opciones: (state) => state.veterinarios.map(v => ({
-      label: v.especialidad ? `${v.nombre} — ${v.especialidad}` : v.nombre,
-      value: v.idveterinario || v._id,
-    })),
-    filtrados: (state) => (q) => {
-      if (!q) return state.veterinarios
+    /** Opciones para q-select (solo activos) */
+    opciones: (state) => state.veterinarios
+      .filter(v => v.estado !== false)
+      .map(v => ({
+        label: v.especialidad ? `${v.nombre} — ${v.especialidad}` : v.nombre,
+        value: v.idveterinario || v._id,
+      })),
+    filtrados: (state) => (q, filtroEstado = 'activos') => {
+      let lista = state.veterinarios
+      if (filtroEstado === 'activos') {
+        lista = lista.filter(v => v.estado !== false)
+      } else if (filtroEstado === 'inactivos') {
+        lista = lista.filter(v => v.estado === false)
+      }
+      if (!q) return lista
       const term = q.toLowerCase()
-      return state.veterinarios.filter(v =>
+      return lista.filter(v =>
         v.nombre?.toLowerCase().includes(term) ||
         v.especialidad?.toLowerCase().includes(term)
       )
@@ -38,7 +49,7 @@ export const useVeterinariosStore = defineStore('veterinarios', {
       this.loading = true
       this.error   = null
       try {
-        const data = await veterinariosAPI.getAll()
+        const data = await veterinariosAPI.getAll({ incluirInactivos: true })
         this.veterinarios = Array.isArray(data)
           ? data
           : (Object.values(data).find(v => Array.isArray(v)) || [])

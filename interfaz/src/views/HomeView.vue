@@ -89,7 +89,14 @@
             <div class="stat-icon-wrap" style="background:linear-gradient(135deg,#00b4d8,#48cae4)">
               <q-icon name="medical_services" size="30px" color="white" />
             </div>
-            <q-badge color="cyan-9" class="q-px-sm">Personal Médico</q-badge>
+            <div class="stat-badge-group">
+              <q-badge color="cyan-9" class="stat-status-badge">
+                {{ veterinariosStore.totalActivos }} Activos
+              </q-badge>
+              <q-badge color="deep-orange-9" class="stat-status-badge" v-if="veterinariosStore.totalInactivos > 0">
+                {{ veterinariosStore.totalInactivos }} Inactivos
+              </q-badge>
+            </div>
           </div>
 
           <div class="stat-body q-mt-md">

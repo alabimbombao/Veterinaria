@@ -33,7 +33,7 @@ export const duenosAPI = {
 
 // ── Veterinarios ─────────────────────────────────────
 export const veterinariosAPI = {
-  getAll: () => api.get('/veterinarios'),
+  getAll: (params) => api.get('/veterinarios', { params }),
   getById: (id) => api.get(`/veterinarios/${id}`),
   create: (body) => api.post('/veterinarios', body),
   update: (id, body) => api.put(`/veterinarios/${id}`, body),

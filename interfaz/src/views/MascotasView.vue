@@ -361,10 +361,17 @@ const opcionesDuenos = computed(() => {
 })
 
 const opcionesVets = computed(() => {
-  return veterinariosStore.veterinarios.map(v => ({
-    label: `${v.nombre} (${v.especialidad || 'Medicina General'})`,
-    value: v.idveterinario || v._id
-  }))
+  const currentSelectedId = extractId(form.value.idveterinario)
+  return veterinariosStore.veterinarios
+    .filter(v => v.estado !== false || extractId(v.idveterinario || v._id) === currentSelectedId)
+    .map(v => {
+      const isInactivo = v.estado === false
+      return {
+        label: isInactivo ? `${v.nombre} (INACTIVO)` : `${v.nombre} (${v.especialidad || 'Medicina General'})`,
+        value: v.idveterinario || v._id,
+        disable: isInactivo
+      }
+    })
 })
 
 function filterDuenos(val, update) {
