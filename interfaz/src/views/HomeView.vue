@@ -321,11 +321,17 @@ onMounted(async () => {
 /* Hero Section */
 .hero-section {
   position: relative;
-  padding: 44px 32px 32px;
+  padding: 28px 16px 24px;
   overflow: hidden;
   text-align: center;
   background: linear-gradient(180deg, rgba(108,99,255,0.08) 0%, rgba(15,17,23,0) 100%);
   border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+@media (min-width: 600px) {
+  .hero-section {
+    padding: 44px 32px 32px;
+  }
 }
 
 .hero-bg-glow {
@@ -347,24 +353,37 @@ onMounted(async () => {
   background: rgba(108,99,255,0.15);
   border: 1px solid rgba(108,99,255,0.3);
   color: #a084ee;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .hero-title {
-  font-size: 32px;
+  font-size: 22px;
   font-weight: 800;
   color: #fff;
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   letter-spacing: -0.5px;
 }
 
+@media (min-width: 600px) {
+  .hero-title {
+    font-size: 32px;
+    margin-bottom: 10px;
+  }
+}
+
 .hero-subtitle {
-  font-size: 15px;
+  font-size: 13px;
   color: rgba(255,255,255,0.55);
   margin: 0 auto;
   max-width: 600px;
+}
+
+@media (min-width: 600px) {
+  .hero-subtitle {
+    font-size: 15px;
+  }
 }
 
 .hero-stats-row {
@@ -391,7 +410,13 @@ onMounted(async () => {
 .dashboard-container {
   max-width: 1340px;
   margin: 0 auto;
-  padding: 24px 28px;
+  padding: 16px 16px;
+}
+
+@media (min-width: 768px) {
+  .dashboard-container {
+    padding: 24px 28px;
+  }
 }
 
 .section-header {
@@ -415,8 +440,32 @@ onMounted(async () => {
 /* Stats Cards Grid */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .stat-card {
+    padding: 16px;
+  }
+  .stat-icon-wrap {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+  }
+  .stat-count {
+    font-size: 26px;
+  }
+  .stat-label {
+    font-size: 13px;
+  }
+  .stat-sub {
+    display: none;
+  }
 }
 
 .stat-card {

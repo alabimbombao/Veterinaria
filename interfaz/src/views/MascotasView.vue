@@ -1,7 +1,7 @@
 <template>
   <CrudPage
     title="Mascotas"
-    subtitle="Pacientes registrados en el sistema — Haz clic en una mascota para ver su expediente completo"
+    subtitle="Pacientes registrados — Haz clic en una mascota para ver su expediente"
     add-label="Nueva Mascota"
     icon="pets"
     icon-gradient="linear-gradient(135deg,#f7b731,#ffa502)"
@@ -14,6 +14,16 @@
     @delete="confirmarEliminar($event)"
     @search="onSearch"
   >
+    <!-- Slot para renderizado del ID autoincrementado mt00, mt01... -->
+    <template #body-cell-codigo="props">
+      <q-td :props="props" class="text-center cursor-pointer" @click="verDetalle(props.row)">
+        <q-badge color="purple-9" text-color="white" class="text-weight-bolder q-px-sm" style="font-size:12px; letter-spacing:0.5px; border-radius:6px">
+          <q-icon name="tag" size="12px" class="q-mr-xs" />
+          {{ props.row.codigo || '—' }}
+        </q-badge>
+      </q-td>
+    </template>
+
     <!-- Slot para renderizado personalizado de filas con evento de clic en detalle -->
     <template #body-cell-nombre="props">
       <q-td :props="props" class="cursor-pointer text-weight-bold text-amber-5" @click="verDetalle(props.row)">
@@ -85,6 +95,9 @@
               <div>
                 <div style="font-size:24px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px">
                   {{ mascotaSeleccionada.nombre }}
+                  <q-badge color="purple-9" style="font-size:13px; font-weight:700; padding:4px 10px; border-radius:12px">
+                    ID: {{ mascotaSeleccionada.codigo || '—' }}
+                  </q-badge>
                   <q-badge color="amber-9" style="font-size:12px; font-weight:600; padding:4px 10px; border-radius:12px">
                     {{ mascotaSeleccionada.especie }}
                   </q-badge>
@@ -230,7 +243,7 @@
 
     <!-- ── Dialog Formulario Crear / Editar ───────────────────────────── -->
     <q-dialog v-model="dialog" class="vet-dialog">
-      <q-card style="min-width:460px; background:#1a1d2e; border:1px solid rgba(255,255,255,0.1); border-radius:16px;">
+      <q-card style="width:480px; max-width:95vw; background:#1a1d2e; border:1px solid rgba(255,255,255,0.1); border-radius:16px;">
         <q-card-section style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px 16px">
           <div style="display:flex;align-items:center;font-size:17px;font-weight:700;color:#fff">
             <q-icon name="pets" size="22px" style="color:#f7b731" class="q-mr-sm" />
@@ -240,6 +253,29 @@
         </q-card-section>
         <q-separator color="rgba(255,255,255,0.08)" />
         <q-card-section class="q-pa-lg q-gutter-sm">
+          <!-- ID Autoincrementado: Solo el sistema lo genera y no se puede editar -->
+          <div v-if="selectedId" class="q-mb-xs">
+            <q-input
+              :model-value="form.codigo"
+              label="ID Mascota (Asignado por el sistema — No editable)"
+              dark outlined dense class="vet-input"
+              readonly
+            >
+              <template #prepend>
+                <q-icon name="tag" color="purple-4" size="18px" />
+              </template>
+              <template #append>
+                <q-icon name="lock" color="amber-4" size="16px">
+                  <q-tooltip>El ID de la mascota es autoincrementado y no editable</q-tooltip>
+                </q-icon>
+              </template>
+            </q-input>
+          </div>
+          <div v-else class="q-pa-sm q-mb-xs" style="background:rgba(108,99,255,0.08); border:1px solid rgba(108,99,255,0.25); border-radius:10px; font-size:12px; color:rgba(255,255,255,0.7); display:flex; align-items:center; gap:8px">
+            <q-icon name="auto_awesome" color="amber-4" size="18px" />
+            <span>El sistema asignará automáticamente el ID autoincrementado (<strong>mt00, mt01...</strong>). <strong>¡No podrá ser editado!</strong></span>
+          </div>
+
           <q-input v-model="form.nombre"       label="Nombre *"          dark outlined dense class="vet-input" />
 
           <!-- Select Especie -->
@@ -342,6 +378,163 @@
       </q-card>
     </q-dialog>
 
+    <!-- ── Diálogo de Pregunta al terminar el formulario de mascota ─────────────── -->
+    <q-dialog v-model="preguntaVisitaDialog" persistent>
+      <q-card style="width:480px; max-width:92vw; background:#161926; border:1px solid rgba(38,222,129,0.3); border-radius:20px; overflow:hidden">
+        <q-card-section style="background:linear-gradient(135deg,rgba(38,222,129,0.15),rgba(32,191,107,0.05)); padding:24px 28px; text-align:center">
+          <div style="width:64px; height:64px; border-radius:20px; background:linear-gradient(135deg,#26de81,#20bf6b); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; box-shadow:0 8px 24px rgba(38,222,129,0.35)">
+            <q-icon name="event_available" size="36px" color="white" />
+          </div>
+          <div style="font-size:20px; font-weight:800; color:#fff">
+            ¿Deseas realizar una visita médica ahora?
+          </div>
+          <div style="font-size:13px; color:rgba(255,255,255,0.65); margin-top:8px; line-height:1.5">
+            La mascota <strong>{{ mascotaRecienCreada?.nombre }}</strong> ha sido registrada con éxito con el ID <strong class="text-amber-4">{{ mascotaRecienCreada?.codigo }}</strong>. ¿Deseas abrir de inmediato una visita médica para este paciente?
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="center" class="q-pa-lg q-pt-md" style="gap:12px">
+          <q-btn
+            flat
+            label="No, solo registrar mascota"
+            style="color:rgba(255,255,255,0.6); border-radius:10px"
+            @click="preguntaVisitaDialog = false"
+          />
+          <q-btn
+            unelevated
+            label="Sí, registrar visita"
+            icon="event_note"
+            style="background:linear-gradient(135deg,#26de81,#20bf6b); color:#fff; border-radius:10px; font-weight:700; padding:10px 20px"
+            @click="abrirVisitaRapida"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- ── Diálogo Formulario Visita Rápida para Mascota ─────────────── -->
+    <q-dialog v-model="visitaRapidaDialog" class="vet-dialog">
+      <q-card style="min-width:500px; max-width:92vw; background:#1a1d2e; border:1px solid rgba(38,222,129,0.3); border-radius:16px;">
+        <q-card-section style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px 16px">
+          <div style="display:flex;align-items:center;font-size:17px;font-weight:700;color:#fff">
+            <q-icon name="event_note" size="22px" style="color:#26de81" class="q-mr-sm" />
+            Nueva Visita para: {{ mascotaRecienCreada?.nombre }} ({{ mascotaRecienCreada?.codigo }})
+          </div>
+          <q-btn flat round dense icon="close" @click="visitaRapidaDialog = false" style="color:rgba(255,255,255,0.5)" />
+        </q-card-section>
+        <q-separator color="rgba(255,255,255,0.08)" />
+
+        <q-card-section class="q-pa-lg q-gutter-sm">
+          <!-- Select Veterinario -->
+          <q-select
+            v-model="formVisita.idveterinario"
+            :options="vetsFiltradosOpts"
+            use-input
+            input-debounce="0"
+            @filter="filterVets"
+            label="Veterinario que atiende *"
+            dark outlined dense class="vet-input"
+            popup-content-class="vet-select-popup"
+            option-value="value" option-label="label"
+            emit-value map-options
+            @update:model-value="onVetVisitaChange"
+          />
+
+          <q-input v-model="formVisita.motivoconsulta" label="Motivo de consulta *" dark outlined dense class="vet-input" placeholder="Ej. Control inicial, chequeo general" />
+          <q-input v-model="formVisita.diagnostico" label="Diagnóstico médico" dark outlined dense class="vet-input" type="textarea" autogrow />
+          <q-input v-model="formVisita.observaciones" label="Observaciones adicionales" dark outlined dense class="vet-input" type="textarea" autogrow />
+          <q-input v-model.number="formVisita.pesoregistrado" label="Peso registrado (kg)" dark outlined dense class="vet-input" type="number" step="0.1" />
+
+          <div class="row q-col-gutter-sm q-mt-xs">
+            <div class="col-6">
+              <q-input v-model.number="formVisita.costo_consulta" label="Tarifa Consulta (COP)" dark outlined dense class="vet-input" type="number" prefix="$" />
+            </div>
+            <div class="col-6">
+              <q-input v-model.number="formVisita.costo_total" label="Costo Total (COP)" dark outlined dense class="vet-input" type="number" prefix="$" />
+            </div>
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="right" class="q-pa-md q-pt-none">
+          <q-btn flat label="Cancelar" @click="visitaRapidaDialog = false" style="color:rgba(255,255,255,0.5)" />
+          <q-btn
+            unelevated
+            label="Guardar Visita"
+            icon="save"
+            :loading="visitasStore.saving"
+            style="background:linear-gradient(135deg,#26de81,#20bf6b);color:white;border-radius:10px"
+            @click="guardarVisitaRapida"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- ── Diálogo Pregunta Tratamiento tras Visita en Mascota ─────────────── -->
+    <q-dialog v-model="preguntaTratamientoDialog" persistent>
+      <q-card style="width:480px; max-width:92vw; background:#161926; border:1px solid rgba(253,150,68,0.3); border-radius:20px; overflow:hidden">
+        <q-card-section style="background:linear-gradient(135deg,rgba(253,150,68,0.15),rgba(231,76,60,0.05)); padding:24px 28px; text-align:center">
+          <div style="width:64px; height:64px; border-radius:20px; background:linear-gradient(135deg,#fd9644,#e74c3c); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; box-shadow:0 8px 24px rgba(253,150,68,0.35)">
+            <q-icon name="medication" size="36px" color="white" />
+          </div>
+          <div style="font-size:20px; font-weight:800; color:#fff">
+            ¿Deseas recetar un tratamiento médico?
+          </div>
+          <div style="font-size:13px; color:rgba(255,255,255,0.65); margin-top:8px; line-height:1.5">
+            La visita médica se ha registrado exitosamente. ¿Deseas agregar un tratamiento para esta consulta?
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="center" class="q-pa-lg q-pt-md" style="gap:12px">
+          <q-btn
+            flat
+            label="No, finalizar"
+            style="color:rgba(255,255,255,0.6); border-radius:10px"
+            @click="preguntaTratamientoDialog = false"
+          />
+          <q-btn
+            unelevated
+            label="Sí, recetar tratamiento"
+            icon="medication"
+            style="background:linear-gradient(135deg,#fd9644,#e74c3c); color:#fff; border-radius:10px; font-weight:700; padding:10px 20px"
+            @click="abrirTratamientoRapido"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- ── Diálogo Formulario Tratamiento Rápido ─────────────── -->
+    <q-dialog v-model="tratamientoRapidoDialog" class="vet-dialog">
+      <q-card style="min-width:480px; max-width:92vw; background:#1a1d2e; border:1px solid rgba(253,150,68,0.3); border-radius:16px;">
+        <q-card-section style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px 16px">
+          <div style="display:flex;align-items:center;font-size:17px;font-weight:700;color:#fff">
+            <q-icon name="medication" size="22px" style="color:#fd9644" class="q-mr-sm" />
+            Nuevo Tratamiento Médico
+          </div>
+          <q-btn flat round dense icon="close" @click="tratamientoRapidoDialog = false" style="color:rgba(255,255,255,0.5)" />
+        </q-card-section>
+        <q-separator color="rgba(255,255,255,0.08)" />
+
+        <q-card-section class="q-pa-lg q-gutter-sm">
+          <q-input v-model="formTratamiento.tipo" label="Tipo de tratamiento *" dark outlined dense class="vet-input" placeholder="Ej. Antibiótico, Vacunación, Desparasitación" />
+          <q-input v-model.number="formTratamiento.costo" label="Costo en COP ($)" dark outlined dense class="vet-input" type="number" prefix="$" />
+          <q-input v-model="formTratamiento.descripcion" label="Descripción" dark outlined dense class="vet-input" type="textarea" autogrow />
+          <q-input v-model="formTratamiento.dosis_indicaciones" label="Dosis / Indicaciones" dark outlined dense class="vet-input" type="textarea" autogrow />
+          <q-input v-model="formTratamiento.proxima_fecha" label="Próxima fecha de control" dark outlined dense class="vet-input" type="date" />
+        </q-card-section>
+
+        <q-card-actions align="right" class="q-pa-md q-pt-none">
+          <q-btn flat label="Cancelar" @click="tratamientoRapidoDialog = false" style="color:rgba(255,255,255,0.5)" />
+          <q-btn
+            unelevated
+            label="Guardar Tratamiento"
+            icon="save"
+            :loading="tratamientosStore.saving"
+            style="background:linear-gradient(135deg,#fd9644,#e74c3c);color:white;border-radius:10px"
+            @click="guardarTratamientoRapido"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
     <!-- ── Confirm Delete ─────────────────────────────── -->
     <q-dialog v-model="deleteDialog">
       <q-card style="min-width:340px; background:#1a1d2e; border:1px solid rgba(255,107,107,0.2); border-radius:16px;">
@@ -383,11 +576,43 @@ const searchTerm          = ref('')
 const selectedId          = ref(null)
 const mascotaSeleccionada = ref(null)
 
+// ── Variables para flujo interactivo post-formulario ──
+const preguntaVisitaDialog       = ref(false)
+const visitaRapidaDialog         = ref(false)
+const mascotaRecienCreada        = ref(null)
+
+const preguntaTratamientoDialog  = ref(false)
+const tratamientoRapidoDialog    = ref(false)
+const visitaRecienCreada         = ref(null)
+
+const formVisita = ref({
+  idmascota: '',
+  idveterinario: '',
+  fechavisita: new Date().toISOString().slice(0, 10),
+  motivoconsulta: '',
+  diagnostico: '',
+  observaciones: '',
+  pesoregistrado: null,
+  costo_consulta: 70000,
+  costo_total: 70000,
+  estado_pago: 'pendiente',
+  monto_abono: 0
+})
+
+const formTratamiento = ref({
+  idvisita: '',
+  tipo: '',
+  descripcion: '',
+  dosis_indicaciones: '',
+  costo: 45000,
+  proxima_fecha: ''
+})
+
 const duenosFiltradosOpts = ref([])
 const vetsFiltradosOpts   = ref([])
 
 const form = ref({
-  nombre:'', especie:'', raza:'', edad_aprox:'',
+  codigo: '', nombre:'', especie:'', raza:'', edad_aprox:'',
   peso_actual:'', 'iddueño': null, idveterinario: null,
   especieOtros: '', razaOtros: ''
 })
@@ -431,7 +656,6 @@ const opcionesRaza = computed(() => {
 })
 
 function onEspecieChange() {
-  // Resetear raza al cambiar especie
   form.value.raza = ''
   form.value.razaOtros = ''
   form.value.especieOtros = ''
@@ -445,7 +669,7 @@ function extractId(val) {
 
 const opcionesDuenos = computed(() => {
   return duenosStore.duenos.map(d => ({
-    label: d.nombre,
+    label: d.cedula ? `${d.nombre} (C.C. ${d.cedula})` : d.nombre,
     value: d.iddueño || d._id
   }))
 })
@@ -456,9 +680,11 @@ const opcionesVets = computed(() => {
     .filter(v => v.estado !== false || extractId(v.idveterinario || v._id) === currentSelectedId)
     .map(v => {
       const isInactivo = v.estado === false
+      const ced = v.cedula ? `C.C. ${v.cedula} — ` : ''
       return {
-        label: isInactivo ? `${v.nombre} (INACTIVO)` : `${v.nombre} (${v.especialidad || 'Medicina General'})`,
+        label: isInactivo ? `${v.nombre} (INACTIVO)` : `${v.nombre} (${ced}${v.especialidad || 'Medicina General'})`,
         value: v.idveterinario || v._id,
+        costo: v.costo_consulta || 70000,
         disable: isInactivo
       }
     })
@@ -491,6 +717,7 @@ function filterVets(val, update) {
 }
 
 const columns = [
+  { name:'codigo',      label:'ID Mascota',  field: r => r.codigo || '—',                         align:'center', sortable:true },
   { name:'nombre',      label:'Mascota',     field:'nombre',                                      align:'left', sortable:true },
   { name:'especie',     label:'Especie',     field:'especie',                                     align:'left', sortable:true },
   { name:'raza',        label:'Raza',        field:'raza',                                        align:'left' },
@@ -548,7 +775,6 @@ function verDetalle(row) {
   detalleDialog.value = true
 }
 
-/** Determina si una especie/raza existente pertenece al catálogo o es personalizada */
 function resolveEspecieForForm(especie) {
   if (!especie) return { especie: '', especieOtros: '' }
   if (catalogoEspecies.includes(especie)) return { especie, especieOtros: '' }
@@ -570,6 +796,7 @@ function openDialog(row = null) {
     const especieRes = resolveEspecieForForm(row.especie)
     const razaRes = resolveRazaForForm(row.raza, row.especie)
     form.value = {
+      codigo: row.codigo || '',
       nombre: row.nombre,
       especie: especieRes.especie,
       especieOtros: especieRes.especieOtros,
@@ -582,14 +809,13 @@ function openDialog(row = null) {
     }
     selectedId.value = row.idmascota || row._id
   } else {
-    form.value = { nombre:'', especie:'', raza:'', edad_aprox:'', peso_actual:'', 'iddueño': null, idveterinario: null, especieOtros: '', razaOtros: '' }
+    form.value = { codigo: '', nombre:'', especie:'', raza:'', edad_aprox:'', peso_actual:'', 'iddueño': null, idveterinario: null, especieOtros: '', razaOtros: '' }
     selectedId.value = null
   }
   dialog.value = true
 }
 
 async function guardar() {
-  // Resolver valores finales de especie y raza
   const especieFinal = form.value.especie === '__otros__' ? form.value.especieOtros : form.value.especie
   const razaFinal = form.value.raza === '__otros__' ? form.value.razaOtros : form.value.raza
 
@@ -612,13 +838,99 @@ async function guardar() {
     if (selectedId.value) {
       await mascotasStore.actualizar(selectedId.value, payload)
       $q.notify({ type:'positive', message:'Mascota actualizada' })
+      dialog.value = false
     } else {
-      await mascotasStore.crear(payload)
-      $q.notify({ type:'positive', message:'Mascota creada' })
+      const res = await mascotasStore.crear(payload)
+      dialog.value = false
+      mascotaRecienCreada.value = res?.mascota || res
+      $q.notify({
+        type:'positive',
+        message: `Mascota creada con ID: ${mascotaRecienCreada.value?.codigo || 'mtXX'}`
+      })
+      // Opcion para elegir si se va a hacer visita: solo sale al terminar el formulario de agregar mascota
+      preguntaVisitaDialog.value = true
     }
-    dialog.value = false
   } catch (e) {
     $q.notify({ type:'negative', message: mascotasStore.error || e.message })
+  }
+}
+
+// ── Flujo Visita Rápida ──
+function abrirVisitaRapida() {
+  preguntaVisitaDialog.value = false
+  const pet = mascotaRecienCreada.value
+  const vetId = extractId(pet?.idveterinario) || (veterinariosStore.activos[0]?.idveterinario || veterinariosStore.activos[0]?._id || '')
+  const vetObj = veterinariosStore.getById(vetId)
+  const tarifa = vetObj?.costo_consulta || 70000
+
+  formVisita.value = {
+    idmascota: extractId(pet?._id || pet?.idmascota),
+    idveterinario: vetId,
+    fechavisita: new Date().toISOString().slice(0, 10),
+    motivoconsulta: 'Control y chequeo inicial de ingreso',
+    diagnostico: 'Paciente en buen estado general tras registro',
+    observaciones: `Registro inicial de paciente ${pet?.nombre || ''}`,
+    pesoregistrado: pet?.peso_actual || null,
+    costo_consulta: tarifa,
+    costo_total: tarifa,
+    estado_pago: 'pendiente',
+    monto_abono: 0
+  }
+  vetsFiltradosOpts.value = opcionesVets.value
+  visitaRapidaDialog.value = true
+}
+
+function onVetVisitaChange(vetId) {
+  const vetObj = veterinariosStore.getById(vetId)
+  if (vetObj) {
+    formVisita.value.costo_consulta = vetObj.costo_consulta || 70000
+    formVisita.value.costo_total = vetObj.costo_consulta || 70000
+  }
+}
+
+async function guardarVisitaRapida() {
+  if (!formVisita.value.idveterinario || !formVisita.value.motivoconsulta) {
+    $q.notify({ type: 'warning', message: 'Veterinario y motivo son obligatorios' })
+    return
+  }
+  try {
+    const res = await visitasStore.crear(formVisita.value)
+    $q.notify({ type: 'positive', message: 'Visita médica registrada con éxito' })
+    visitaRapidaDialog.value = false
+    visitaRecienCreada.value = res?.visita || res
+    // Preguntar si desea agregar tratamiento para esta visita
+    preguntaTratamientoDialog.value = true
+  } catch (e) {
+    $q.notify({ type: 'negative', message: visitasStore.error || e.message })
+  }
+}
+
+// ── Flujo Tratamiento Rápido ──
+function abrirTratamientoRapido() {
+  preguntaTratamientoDialog.value = false
+  const v = visitaRecienCreada.value
+  formTratamiento.value = {
+    idvisita: extractId(v?._id || v?.idvisita),
+    tipo: 'Desparasitación y Vitaminas',
+    descripcion: `Tratamiento preventivo para ${mascotaRecienCreada.value?.nombre || 'paciente'}`,
+    dosis_indicaciones: 'Administrar vía oral según prescripción',
+    costo: 45000,
+    proxima_fecha: ''
+  }
+  tratamientoRapidoDialog.value = true
+}
+
+async function guardarTratamientoRapido() {
+  if (!formTratamiento.value.tipo) {
+    $q.notify({ type: 'warning', message: 'El tipo de tratamiento es obligatorio' })
+    return
+  }
+  try {
+    await tratamientosStore.crear(formTratamiento.value)
+    $q.notify({ type: 'positive', message: 'Tratamiento médico registrado con éxito' })
+    tratamientoRapidoDialog.value = false
+  } catch (e) {
+    $q.notify({ type: 'negative', message: tratamientosStore.error || e.message })
   }
 }
 

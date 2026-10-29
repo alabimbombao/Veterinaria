@@ -3,6 +3,27 @@ const Mascota = require('../models/Mascota');
 const Dueno = require('../models/dueño');
 const Veterinario = require('../models/Veterinario');
 
+// Función auxiliar para autoincrementar el código mt00, mt01, mt02...
+const generarCodigoMascota = async () => {
+    const mascotas = await Mascota.find({ codigo: { $regex: /^mt\d+$/i } }, 'codigo');
+    let maxNum = -1;
+    for (const m of mascotas) {
+        if (m.codigo) {
+            const num = parseInt(m.codigo.replace(/^mt/i, ''), 10);
+            if (!isNaN(num) && num > maxNum) {
+                maxNum = num;
+            }
+        }
+    }
+    if (maxNum === -1) {
+        const total = await Mascota.countDocuments();
+        if (total === 0) return 'mt00';
+        return `mt${String(total).padStart(2, '0')}`;
+    }
+    const siguiente = maxNum + 1;
+    return `mt${String(siguiente).padStart(2, '0')}`;
+};
+
 // Obtener todas las mascotas activas
 const getMascotas = async (req = request, res = response) => {
     try {
@@ -12,8 +33,9 @@ const getMascotas = async (req = request, res = response) => {
         const [total, mascotas] = await Promise.all([
             Mascota.countDocuments(query),
             Mascota.find(query)
-                .populate('iddueño', 'nombre email telefono')
-                .populate('idveterinario', 'nombre especialidad')
+                .sort({ createdAt: -1, _id: -1 })
+                .populate('iddueño', 'nombre email telefono cedula')
+                .populate('idveterinario', 'nombre especialidad cedula')
                 .skip(Number(desde))
                 .limit(Number(limite))
         ]);
@@ -37,8 +59,8 @@ const getMascotaById = async (req = request, res = response) => {
     try {
         const { id } = req.params;
         const mascota = await Mascota.findById(id)
-            .populate('iddueño', 'nombre email telefono')
-            .populate('idveterinario', 'nombre especialidad');
+            .populate('iddueño', 'nombre email telefono cedula')
+            .populate('idveterinario', 'nombre especialidad cedula');
 
         if (!mascota || !mascota.estado) {
             return res.status(404).json({
@@ -85,7 +107,11 @@ const crearMascota = async (req = request, res = response) => {
             }
         }
 
+        // Generar código autoincrementado mt00, mt01... que solo el sistema puede asignar
+        const codigoGenerado = await generarCodigoMascota();
+
         const mascota = new Mascota({
+            codigo: codigoGenerado,
             iddueño,
             idveterinario,
             nombre,
@@ -97,10 +123,14 @@ const crearMascota = async (req = request, res = response) => {
 
         await mascota.save();
 
+        const mascotaPop = await Mascota.findById(mascota._id)
+            .populate('iddueño', 'nombre email telefono cedula')
+            .populate('idveterinario', 'nombre especialidad cedula');
+
         res.status(201).json({
             ok: true,
             msg: 'Mascota registrada exitosamente',
-            mascota
+            mascota: mascotaPop
         });
     } catch (error) {
         console.error(error);
@@ -115,7 +145,8 @@ const crearMascota = async (req = request, res = response) => {
 const actualizarMascota = async (req = request, res = response) => {
     try {
         const { id } = req.params;
-        const { _id, estado, ...data } = req.body;
+        // El campo codigo no podrá ser editado nunca: se excluye explícitamente
+        const { _id, estado, codigo, ...data } = req.body;
 
         if (data.iddueño) {
             const duenoExiste = await Dueno.findById(data.iddueño);
@@ -138,8 +169,8 @@ const actualizarMascota = async (req = request, res = response) => {
         }
 
         const mascota = await Mascota.findByIdAndUpdate(id, data, { new: true })
-            .populate('iddueño', 'nombre email telefono')
-            .populate('idveterinario', 'nombre especialidad');
+            .populate('iddueño', 'nombre email telefono cedula')
+            .populate('idveterinario', 'nombre especialidad cedula');
 
         if (!mascota || !mascota.estado) {
             return res.status(404).json({

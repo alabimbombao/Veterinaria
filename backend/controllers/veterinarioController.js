@@ -10,6 +10,7 @@ const getVeterinarios = async (req = request, res = response) => {
         const [total, veterinarios] = await Promise.all([
             Veterinario.countDocuments(query),
             Veterinario.find(query)
+                .sort({ createdAt: -1, _id: -1 })
                 .skip(Number(desde))
                 .limit(Number(limite))
         ]);
@@ -57,10 +58,23 @@ const getVeterinarioById = async (req = request, res = response) => {
 // Crear nuevo veterinario
 const crearVeterinario = async (req = request, res = response) => {
     try {
-        const { nombre, especialidad, costo_consulta, estado } = req.body;
+        const { nombre, cedula, especialidad, costo_consulta, estado } = req.body;
+        const cedulaTrim = cedula ? String(cedula).trim() : '';
+
+        // Verificar si la cédula ya existe
+        if (cedulaTrim) {
+            const vetExiste = await Veterinario.findOne({ cedula: cedulaTrim });
+            if (vetExiste) {
+                return res.status(400).json({
+                    ok: false,
+                    msg: `La cédula ${cedulaTrim} ya está registrada con el veterinario "${vetExiste.nombre}"`
+                });
+            }
+        }
 
         const veterinario = new Veterinario({
             nombre,
+            cedula: cedulaTrim,
             especialidad,
             costo_consulta,
             estado: estado !== undefined ? estado : true
@@ -86,6 +100,18 @@ const actualizarVeterinario = async (req = request, res = response) => {
     try {
         const { id } = req.params;
         const { _id, idveterinario, ...data } = req.body;
+
+        if (data.cedula) {
+            const cedulaTrim = String(data.cedula).trim();
+            data.cedula = cedulaTrim;
+            const vetExiste = await Veterinario.findOne({ cedula: cedulaTrim, _id: { $ne: id } });
+            if (vetExiste) {
+                return res.status(400).json({
+                    ok: false,
+                    msg: `La cédula ${cedulaTrim} ya pertenece a otro veterinario ("${vetExiste.nombre}")`
+                });
+            }
+        }
 
         const veterinario = await Veterinario.findByIdAndUpdate(id, data, { new: true });
 

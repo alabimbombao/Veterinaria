@@ -16,6 +16,10 @@ const DuenoSchema = new Schema(
             type: String,
             trim: true
         },
+        cedula: {
+            type: String,
+            trim: true
+        },
         email: {
             type: String,
             required: [true, 'El email es obligatorio'],

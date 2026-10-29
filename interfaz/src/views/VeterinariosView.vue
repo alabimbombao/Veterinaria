@@ -111,6 +111,7 @@
         <q-separator color="rgba(255,255,255,0.08)" />
         <q-card-section class="q-pa-lg q-gutter-sm">
           <q-input v-model="form.nombre" label="Nombre *" dark outlined dense class="vet-input" />
+          <q-input v-model="form.cedula" label="Cédula *" dark outlined dense class="vet-input" placeholder="Ej. 71200001" />
           <q-input v-model="form.especialidad" label="Especialidad" dark outlined dense class="vet-input" />
           <q-input v-model.number="form.costo_consulta" label="Tarifa Consulta (COP)" dark outlined dense class="vet-input" type="number" prefix="$" />
 
@@ -177,6 +178,10 @@
                   <q-icon name="medical_services" size="16px" color="red-4" class="q-mr-xs" />
                   {{ v.nombre }}
                 </div>
+                <div class="inactivo-detail" v-if="v.cedula">
+                  <q-icon name="badge" size="13px" class="q-mr-xs" color="cyan-3" />
+                  C.C. {{ v.cedula }}
+                </div>
                 <div class="inactivo-detail">
                   <q-icon name="star" size="13px" class="q-mr-xs" />
                   {{ v.especialidad || 'Sin especialidad registrada' }}
@@ -227,10 +232,11 @@ const searchTerm      = ref('')
 const filtroEstado    = ref('activos')
 const selectedId      = ref(null)
 
-const form = ref({ nombre:'', especialidad:'', costo_consulta: 70000, estado: true })
+const form = ref({ nombre:'', cedula:'', especialidad:'', costo_consulta: 70000, estado: true })
 
 const columns = [
   { name:'nombre',         label:'Nombre',            field:'nombre',         align:'left', sortable:true },
+  { name:'cedula',         label:'Cédula',            field: r => r.cedula || '—', align:'left', sortable:true },
   { name:'especialidad',   label:'Especialidad',      field:'especialidad',   align:'left', sortable:true },
   { name:'costo_consulta', label:'Tarifa Consulta',   field:'costo_consulta', align:'center', sortable:true },
   { name:'estado',         label:'Estado',            field:'estado',         align:'center', sortable:true },
@@ -241,21 +247,22 @@ function openDialog(row = null) {
   if (row) {
     form.value = {
       nombre: row.nombre,
+      cedula: row.cedula || '',
       especialidad: row.especialidad,
       costo_consulta: row.costo_consulta || 70000,
       estado: row.estado !== false
     }
     selectedId.value = row.idveterinario || row._id
   } else {
-    form.value = { nombre:'', especialidad:'', costo_consulta: 70000, estado: true }
+    form.value = { nombre:'', cedula:'', especialidad:'', costo_consulta: 70000, estado: true }
     selectedId.value = null
   }
   dialog.value = true
 }
 
 async function guardar() {
-  if (!form.value.nombre) {
-    $q.notify({ type:'warning', message:'El nombre es obligatorio' })
+  if (!form.value.nombre || !form.value.cedula) {
+    $q.notify({ type:'warning', message:'Nombre y cédula son obligatorios' })
     return
   }
   try {

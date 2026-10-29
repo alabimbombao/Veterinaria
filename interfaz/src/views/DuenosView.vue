@@ -93,7 +93,7 @@
 
     <!-- ── Dialog Formulario (Crear / Editar) ──────────── -->
     <q-dialog v-model="dialog" class="vet-dialog">
-      <q-card style="min-width:440px; background:#1a1d2e; border:1px solid rgba(255,255,255,0.1); border-radius:16px;">
+      <q-card style="width:460px; max-width:95vw; background:#1a1d2e; border:1px solid rgba(255,255,255,0.1); border-radius:16px;">
         <q-card-section style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px 16px">
           <div style="display:flex;align-items:center;font-size:17px;font-weight:700;color:#fff">
             <q-icon name="person" size="22px" style="color:#6c63ff" class="q-mr-sm" />
@@ -104,6 +104,7 @@
         <q-separator color="rgba(255,255,255,0.08)" />
         <q-card-section class="q-pa-lg q-gutter-sm">
           <q-input v-model="form.nombre"    label="Nombre *"   dark outlined dense class="vet-input" />
+          <q-input v-model="form.cedula"    label="Cédula *"   dark outlined dense class="vet-input" placeholder="Ej. 1001234567" />
           <q-input v-model="form.email"     label="Email *"    dark outlined dense class="vet-input" type="email" />
           <q-input v-model="form.telefono"  label="Teléfono"   dark outlined dense class="vet-input" />
           <q-input v-model="form.direccion" label="Dirección"  dark outlined dense class="vet-input" />
@@ -171,6 +172,10 @@
                   <q-icon name="person" size="18px" color="red-4" class="q-mr-xs" />
                   {{ d.nombre }}
                 </div>
+                <div class="inactivo-detail" v-if="d.cedula">
+                  <q-icon name="badge" size="13px" class="q-mr-xs" color="purple-3" />
+                  C.C. {{ d.cedula }}
+                </div>
                 <div class="inactivo-detail">
                   <q-icon name="email" size="13px" class="q-mr-xs" />
                   {{ d.email || 'Sin correo' }}
@@ -232,10 +237,11 @@ const inactivosDialog = ref(false)
 const searchTerm = ref('')
 const filtroEstado = ref('activos')
 const selectedId = ref(null)
-const form = ref({ nombre: '', email: '', telefono: '', direccion: '', estado: true })
+const form = ref({ nombre: '', cedula: '', email: '', telefono: '', direccion: '', estado: true })
 
 const columns = [
   { name: 'nombre',    label: 'Nombre',    field: 'nombre',                                align: 'left',   sortable: true },
+  { name: 'cedula',    label: 'Cédula',    field: r => r.cedula || '—',                    align: 'left',   sortable: true },
   { name: 'email',     label: 'Email',     field: 'email',                                 align: 'left',   sortable: true },
   { name: 'telefono',  label: 'Teléfono',  field: r => r.telefono || '—',                 align: 'left'   },
   { name: 'direccion', label: 'Dirección', field: r => r.direccion || r.dirección || '—', align: 'left'   },
@@ -247,6 +253,7 @@ function openDialog(row = null) {
   if (row) {
     form.value = {
       nombre: row.nombre,
+      cedula: row.cedula || '',
       email: row.email,
       telefono: row.telefono,
       direccion: row.direccion || row.dirección || '',
@@ -254,15 +261,15 @@ function openDialog(row = null) {
     }
     selectedId.value = row.iddueño || row._id
   } else {
-    form.value = { nombre: '', email: '', telefono: '', direccion: '', estado: true }
+    form.value = { nombre: '', cedula: '', email: '', telefono: '', direccion: '', estado: true }
     selectedId.value = null
   }
   dialog.value = true
 }
 
 async function guardar() {
-  if (!form.value.nombre || !form.value.email) {
-    $q.notify({ type: 'warning', message: 'Nombre y email son obligatorios' })
+  if (!form.value.nombre || !form.value.cedula || !form.value.email) {
+    $q.notify({ type: 'warning', message: 'Nombre, cédula y email son obligatorios' })
     return
   }
   try {

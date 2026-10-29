@@ -25,10 +25,13 @@ export const useMascotasStore = defineStore('mascotas', {
     activas: (state) => state.mascotas.filter(m => m.estado !== false),
     getById: (state) => (id) =>
       state.mascotas.find(m => extractId(m.idmascota || m._id) === extractId(id)),
-    /** Opciones para q-select (incluye especie para identificar) */
+    /** Opciones para q-select (incluye código y especie para identificar) */
     opciones: (state) => state.mascotas.map(m => ({
-      label: `${m.nombre} (${m.especie || 'N/D'})`,
+      label: `${m.codigo ? '[' + m.codigo + '] ' : ''}${m.nombre} (${m.especie || 'N/D'})`,
       value: m.idmascota || m._id,
+      codigo: m.codigo,
+      nombre: m.nombre,
+      idveterinario: m.idveterinario
     })),
     /** Mascotas de un dueño específico */
     porDueno: (state) => (idDueno) =>
@@ -39,6 +42,7 @@ export const useMascotasStore = defineStore('mascotas', {
       if (!q) return state.mascotas
       const term = q.toLowerCase()
       return state.mascotas.filter(m =>
+        m.codigo?.toLowerCase().includes(term) ||
         m.nombre?.toLowerCase().includes(term) ||
         m.especie?.toLowerCase().includes(term) ||
         m.raza?.toLowerCase().includes(term)

@@ -21,9 +21,34 @@
       </q-td>
     </template>
 
+    <!-- Template para Visita / Paciente con ID de mascota -->
+    <template #body-cell-idvisita="props">
+      <q-td :props="props">
+        <div style="display:flex; flex-direction:column; gap:3px">
+          <div style="display:flex; align-items:center; gap:6px">
+            <q-badge
+              v-if="getMascotaFromVisita(props.row.idvisita)?.codigo"
+              color="purple-9"
+              text-color="white"
+              style="font-size:11px; font-weight:700; padding:2px 7px; border-radius:6px; letter-spacing:0.4px"
+            >
+              <q-icon name="tag" size="10px" class="q-mr-xs" />
+              {{ getMascotaFromVisita(props.row.idvisita)?.codigo }}
+            </q-badge>
+            <span style="font-weight:600; color:#fff">
+              {{ getMascotaFromVisita(props.row.idvisita)?.nombre || 'Mascota' }}
+            </span>
+          </div>
+          <div style="font-size:11px; color:rgba(255,255,255,0.5)">
+            {{ getVisitaFechaMotivo(props.row.idvisita) }}
+          </div>
+        </div>
+      </q-td>
+    </template>
+
     <!-- ── Dialog Formulario ───────────────────────────── -->
     <q-dialog v-model="dialog" class="vet-dialog">
-      <q-card style="min-width:480px; background:#1a1d2e; border:1px solid rgba(255,255,255,0.1); border-radius:16px;">
+      <q-card style="width:500px; max-width:95vw; background:#1a1d2e; border:1px solid rgba(255,255,255,0.1); border-radius:16px;">
         <q-card-section style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px 16px">
           <div style="display:flex;align-items:center;font-size:17px;font-weight:700;color:#fff">
             <q-icon name="medication" size="22px" style="color:#fd9644" class="q-mr-sm" />
@@ -126,8 +151,9 @@ const visitasOpts = computed(() => visitasStore.visitas.map(v => {
   const idMascotaStr = extractId(v.idmascota)
   const mascota = mascotasStore.mascotas.find(m => extractId(m.idmascota || m._id) === idMascotaStr)
   const f = v.fechavisita ? new Date(v.fechavisita).toLocaleDateString('es-CO') : '—'
+  const codigoStr = mascota?.codigo ? `[${mascota.codigo}] ` : ''
   return {
-    label: `Visita ${f} — ${mascota ? mascota.nombre : 'Mascota'} (${v.motivoconsulta || ''})`,
+    label: `${codigoStr}${mascota ? mascota.nombre : 'Mascota'} — ${f} (${v.motivoconsulta || ''})`,
     value: visitId
   }
 }))
@@ -146,7 +172,7 @@ function filterVisitas(val, update) {
 }
 
 const columns = [
-  { name:'idvisita',          label:'Visita / Paciente',  field: r => labelVisita(r.idvisita), align:'left', sortable:true },
+  { name:'idvisita',          label:'Paciente (ID + Visita)', field: r => labelVisita(r.idvisita), align:'left', sortable:true },
   { name:'tipo',              label:'Tratamiento',        field:'tipo',              align:'left', sortable:true },
   { name:'costo',             label:'Costo (COP)',        field:'costo',             align:'center', sortable:true },
   { name:'descripcion',       label:'Descripción',        field:'descripcion',       align:'left' },
@@ -163,7 +189,26 @@ function labelVisita(val) {
   const idMascotaStr = extractId(v.idmascota)
   const mascota = mascotasStore.mascotas.find(m => extractId(m.idmascota || m._id) === idMascotaStr)
   const fecha = v.fechavisita ? new Date(v.fechavisita).toLocaleDateString('es-CO') : '—'
-  return `${mascota ? mascota.nombre : 'Mascota'} (${fecha})`
+  const codigoStr = mascota?.codigo ? `[${mascota.codigo}] ` : ''
+  return `${codigoStr}${mascota ? mascota.nombre : 'Mascota'} (${fecha})`
+}
+
+function getMascotaFromVisita(val) {
+  if (!val) return null
+  const vId = extractId(val)
+  const v = visitasStore.visitas.find(x => extractId(x.idvisita || x._id) === vId)
+  if (!v) return null
+  const idMascotaStr = extractId(v.idmascota)
+  return mascotasStore.mascotas.find(m => extractId(m.idmascota || m._id) === idMascotaStr) || null
+}
+
+function getVisitaFechaMotivo(val) {
+  if (!val) return '—'
+  const vId = extractId(val)
+  const v = visitasStore.visitas.find(x => extractId(x.idvisita || x._id) === vId)
+  if (!v) return '—'
+  const fecha = v.fechavisita ? new Date(v.fechavisita).toLocaleDateString('es-CO') : '—'
+  return `${fecha}${v.motivoconsulta ? ' — ' + v.motivoconsulta : ''}`
 }
 
 function openDialog(row = null) {

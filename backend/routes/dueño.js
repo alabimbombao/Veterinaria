@@ -29,6 +29,7 @@ router.post(
     '/',
     [
         check('nombre', 'El nombre es obligatorio').not().isEmpty(),
+        check('cedula', 'La cédula es obligatoria').not().isEmpty(),
         check('email', 'El correo no es válido').isEmail(),
         validarCampos
     ],

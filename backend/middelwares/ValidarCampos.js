@@ -6,9 +6,12 @@ const { validationResult } = require('express-validator');
 const validarCampos = (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+        const errorList = errors.array();
         return res.status(400).json({
             ok: false,
-            errores: errors.mapped()
+            msg: errorList[0]?.msg || 'Error de validación en los campos',
+            errores: errors.mapped(),
+            errors: errorList
         });
     }
     next();

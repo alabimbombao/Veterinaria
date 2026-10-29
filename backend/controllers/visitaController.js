@@ -12,8 +12,9 @@ const getVisitas = async (req = request, res = response) => {
         const [total, visitas] = await Promise.all([
             Visita.countDocuments(query),
             Visita.find(query)
-                .populate({ path: 'idmascota', select: 'nombre especie raza iddueño', populate: { path: 'iddueño', select: 'nombre telefono email' } })
-                .populate('idveterinario', 'nombre especialidad')
+                .sort({ createdAt: -1, _id: -1 })
+                .populate({ path: 'idmascota', select: 'nombre especie raza codigo iddueño', populate: { path: 'iddueño', select: 'nombre telefono email cedula' } })
+                .populate('idveterinario', 'nombre especialidad cedula')
                 .skip(Number(desde))
                 .limit(Number(limite))
         ]);
@@ -102,10 +103,14 @@ const crearVisita = async (req = request, res = response) => {
 
         await visita.save();
 
+        const visitaPop = await Visita.findById(visita._id)
+            .populate({ path: 'idmascota', select: 'nombre especie raza codigo iddueño', populate: { path: 'iddueño', select: 'nombre telefono email cedula' } })
+            .populate('idveterinario', 'nombre especialidad cedula');
+
         res.status(201).json({
             ok: true,
             msg: 'Visita registrada exitosamente',
-            visita
+            visita: visitaPop
         });
     } catch (error) {
         console.error(error);

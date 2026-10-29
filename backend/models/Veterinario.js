@@ -7,6 +7,10 @@ const VeterinarioSchema = new Schema(
             required: [true, 'El nombre es obligatorio'],
             trim: true
         },
+        cedula: {
+            type: String,
+            trim: true
+        },
         especialidad: {
             type: String,
             trim: true

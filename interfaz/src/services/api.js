@@ -17,8 +17,13 @@ api.interceptors.response.use(
   },
   (error) => {
     // Manejo de errores (por ejemplo, validaciones de express-validator)
-    const msg = error.response?.data?.msg || error.response?.data?.errors?.[0]?.msg || 'Error en la petición al servidor'
-    return Promise.reject(new Error(msg))
+    const errData = error.response?.data
+    let msg = errData?.msg || errData?.errors?.[0]?.msg
+    if (!msg && errData?.errores) {
+      const primerError = Object.values(errData.errores)[0]
+      msg = primerError?.msg || (typeof primerError === 'string' ? primerError : null)
+    }
+    return Promise.reject(new Error(msg || 'Error en la petición al servidor'))
   }
 )
 

@@ -38,6 +38,7 @@ export const useVeterinariosStore = defineStore('veterinarios', {
       const term = q.toLowerCase()
       return lista.filter(v =>
         v.nombre?.toLowerCase().includes(term) ||
+        v.cedula?.toLowerCase().includes(term) ||
         v.especialidad?.toLowerCase().includes(term)
       )
     },

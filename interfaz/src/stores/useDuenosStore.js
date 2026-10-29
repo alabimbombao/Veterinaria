@@ -31,6 +31,7 @@ export const useDuenosStore = defineStore('duenos', {
       const term = q.toLowerCase()
       return lista.filter(d =>
         d.nombre?.toLowerCase().includes(term) ||
+        d.cedula?.toLowerCase().includes(term) ||
         d.email?.toLowerCase().includes(term)  ||
         d.telefono?.toLowerCase().includes(term)
       )

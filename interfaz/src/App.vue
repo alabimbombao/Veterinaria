@@ -31,6 +31,7 @@
           :to="item.route"
           active-class="nav-item-active"
           class="nav-item q-mb-xs"
+          @click="closeDrawerOnMobile"
         >
           <q-item-section avatar>
             <q-icon :name="item.icon" size="22px" />
@@ -72,7 +73,7 @@
             text-color="white"
             size="sm"
             label="En línea"
-            class="status-chip"
+            class="status-chip gt-xs"
           />
         </div>
       </q-toolbar>
@@ -87,13 +88,31 @@
       </router-view>
     </q-page-container>
 
+    <!-- BOTTOM NAV (Mobile only) -->
+    <q-footer class="vet-bottom-nav lt-sm">
+      <div class="bottom-nav-inner">
+        <router-link
+          v-for="item in navItems"
+          :key="item.route"
+          :to="item.route"
+          class="bottom-nav-item"
+          :class="{ 'bottom-nav-active': $route.path === item.route }"
+        >
+          <q-icon :name="item.icon" size="22px" />
+          <span class="bottom-nav-label">{{ item.label }}</span>
+        </router-link>
+      </div>
+    </q-footer>
+
   </q-layout>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useQuasar } from 'quasar'
 
+const $q = useQuasar()
 const drawer = ref(true)
 const route = useRoute()
 
@@ -108,14 +127,20 @@ const navItems = [
 
 const pageTitles = {
   '/':               'Dashboard',
-  '/duenos':         'Gestión de Dueños',
-  '/veterinarios':   'Gestión de Veterinarios',
-  '/mascotas':       'Gestión de Mascotas',
-  '/visitas':        'Gestión de Visitas',
-  '/tratamientos':   'Gestión de Tratamientos',
+  '/duenos':         'Dueños',
+  '/veterinarios':   'Veterinarios',
+  '/mascotas':       'Mascotas',
+  '/visitas':        'Visitas',
+  '/tratamientos':   'Tratamientos',
 }
 
 const currentPageTitle = computed(() => pageTitles[route.path] || 'VetClinic')
+
+function closeDrawerOnMobile() {
+  if ($q.screen.lt.md) {
+    drawer.value = false
+  }
+}
 </script>
 
 <style>
@@ -266,7 +291,7 @@ body, .q-body--prevent-scroll {
   color: #fff !important;
 }
 
-/* ── Table ── */
+/* ── Table — horizontal scroll on mobile ── */
 .vet-table {
   background: transparent !important;
   color: #fff !important;
@@ -279,6 +304,7 @@ body, .q-body--prevent-scroll {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.6px;
+  white-space: nowrap;
 }
 
 .vet-table tbody tr td {
@@ -296,12 +322,18 @@ body, .q-body--prevent-scroll {
   color: rgba(255,255,255,0.5) !important;
 }
 
-/* ── Dialog ── */
+/* Wrap table in horizontal scroll */
+.table-card .q-table__container {
+  overflow-x: auto !important;
+}
+
+/* ── Dialog — fluid on mobile ── */
 .vet-dialog .q-card {
   background: #1a1d2e !important;
   border: 1px solid rgba(255,255,255,0.1) !important;
   border-radius: 16px !important;
   color: #fff !important;
+  max-width: 95vw !important;
 }
 
 .vet-dialog .q-card__section--vert {
@@ -327,8 +359,102 @@ body, .q-body--prevent-scroll {
 }
 
 /* ── Scrollbar ── */
-::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: #0f1117; }
 ::-webkit-scrollbar-thumb { background: rgba(108,99,255,0.4); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(108,99,255,0.7); }
+
+/* ── Bottom Nav (Mobile) ── */
+.vet-bottom-nav {
+  background: rgba(21, 24, 36, 0.98) !important;
+  border-top: 1px solid rgba(255,255,255,0.08) !important;
+  backdrop-filter: blur(20px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.bottom-nav-inner {
+  display: flex;
+  align-items: stretch;
+  height: 60px;
+}
+
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  text-decoration: none;
+  color: rgba(255,255,255,0.45);
+  transition: all 0.2s ease;
+  padding: 6px 2px;
+  position: relative;
+}
+
+.bottom-nav-item:hover {
+  color: rgba(255,255,255,0.8);
+  background: rgba(255,255,255,0.05);
+}
+
+.bottom-nav-active {
+  color: #6c63ff !important;
+}
+
+.bottom-nav-active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 3px;
+  border-radius: 0 0 4px 4px;
+  background: linear-gradient(90deg, #6c63ff, #48cae4);
+}
+
+.bottom-nav-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  line-height: 1;
+}
+
+/* ── Mobile padding for bottom nav ── */
+@media (max-width: 599px) {
+  .vet-page-container .q-page {
+    padding-bottom: 72px !important;
+  }
+  /* Dialogs full-width on mobile */
+  .q-dialog__inner--minimized > div {
+    max-width: 95vw !important;
+    min-width: unset !important;
+    width: 95vw !important;
+  }
+  /* Tighter padding on mobile pages */
+  .vet-page.q-pa-lg {
+    padding: 12px !important;
+  }
+}
+
+/* ── Select Popup ── */
+.vet-select-popup {
+  background-color: #1a1d2e !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+.vet-select-popup .q-item {
+  color: #e2e8f0 !important;
+  border-radius: 8px !important;
+  margin: 2px 6px !important;
+  transition: all 0.15s ease !important;
+}
+
+.vet-select-popup .q-item--active,
+.vet-select-popup .q-item:hover {
+  background: rgba(108, 99, 255, 0.25) !important;
+  color: #ffffff !important;
+}
 </style>

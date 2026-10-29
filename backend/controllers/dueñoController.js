@@ -10,6 +10,7 @@ const getDuenos = async (req = request, res = response) => {
         const [total, duenos] = await Promise.all([
             Dueno.countDocuments(query),
             Dueno.find(query)
+                .sort({ createdAt: -1, _id: -1 })
                 .skip(Number(desde))
                 .limit(Number(limite))
         ]);
@@ -57,8 +58,20 @@ const getDuenoById = async (req = request, res = response) => {
 // Crear un nuevo dueño
 const crearDueno = async (req = request, res = response) => {
     try {
-        const { nombre, direccion, dirección, telefono, email, estado } = req.body;
+        const { nombre, cedula, direccion, dirección, telefono, email, estado } = req.body;
         const direccionFinal = dirección || direccion || '';
+        const cedulaTrim = cedula ? String(cedula).trim() : '';
+
+        // Verificar si la cédula ya está registrada
+        if (cedulaTrim) {
+            const cedulaExiste = await Dueno.findOne({ cedula: cedulaTrim });
+            if (cedulaExiste) {
+                return res.status(400).json({
+                    ok: false,
+                    msg: `La cédula ${cedulaTrim} ya está registrada con el dueño "${cedulaExiste.nombre}"`
+                });
+            }
+        }
 
         // Verificar si el email ya está registrado
         const duenoExiste = await Dueno.findOne({ email });
@@ -71,6 +84,7 @@ const crearDueno = async (req = request, res = response) => {
 
         const dueno = new Dueno({
             nombre,
+            cedula: cedulaTrim,
             dirección: direccionFinal,
             telefono,
             email,
@@ -100,6 +114,19 @@ const actualizarDueno = async (req = request, res = response) => {
 
         if (data.direccion !== undefined) {
             data.dirección = data.direccion;
+        }
+
+        // Si se actualiza la cédula, verificar que no pertenezca a otro dueño
+        if (data.cedula) {
+            const cedulaTrim = String(data.cedula).trim();
+            data.cedula = cedulaTrim;
+            const cedulaExiste = await Dueno.findOne({ cedula: cedulaTrim, _id: { $ne: id } });
+            if (cedulaExiste) {
+                return res.status(400).json({
+                    ok: false,
+                    msg: `La cédula ${cedulaTrim} ya pertenece a otro dueño ("${cedulaExiste.nombre}")`
+                });
+            }
         }
 
         // Si se actualiza el email, verificar que no pertenezca a otro dueño

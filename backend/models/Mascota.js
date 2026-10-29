@@ -11,6 +11,10 @@ const MascotaSchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: 'Veterinario'
         },
+        codigo: {
+            type: String,
+            trim: true
+        },
         nombre: {
             type: String,
             required: [true, 'El nombre de la mascota es obligatorio'],

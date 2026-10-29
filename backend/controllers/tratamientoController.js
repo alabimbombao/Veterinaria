@@ -11,11 +11,12 @@ const getTratamientos = async (req = request, res = response) => {
         const [total, tratamientos] = await Promise.all([
             Tratamiento.countDocuments(query),
             Tratamiento.find(query)
+                .sort({ createdAt: -1, _id: -1 })
                 .populate({
                     path: 'idvisita',
                     select: 'fechavisita motivoconsulta diagnostico',
                     populate: [
-                        { path: 'idmascota', select: 'nombre especie' },
+                        { path: 'idmascota', select: 'nombre especie codigo' },
                         { path: 'idveterinario', select: 'nombre especialidad' }
                     ]
                 })
@@ -96,10 +97,20 @@ const crearTratamiento = async (req = request, res = response) => {
 
         await tratamiento.save();
 
+        const tratamientoPop = await Tratamiento.findById(tratamiento._id)
+            .populate({
+                path: 'idvisita',
+                select: 'fechavisita motivoconsulta diagnostico',
+                populate: [
+                    { path: 'idmascota', select: 'nombre especie codigo' },
+                    { path: 'idveterinario', select: 'nombre especialidad' }
+                ]
+            });
+
         res.status(201).json({
             ok: true,
             msg: 'Tratamiento registrado exitosamente',
-            tratamiento
+            tratamiento: tratamientoPop
         });
     } catch (error) {
         console.error(error);

@@ -1,8 +1,8 @@
 <template>
-  <q-page class="vet-page q-pa-lg">
+  <q-page class="vet-page q-pa-md q-pa-lg-lg">
 
     <!-- Page Header -->
-    <div class="page-header q-mb-lg">
+    <div class="page-header q-mb-md">
       <div class="page-header-left">
         <div class="page-icon" :style="{ background: iconGradient }">
           <q-icon :name="icon" size="24px" color="white" />
@@ -12,7 +12,7 @@
           <p class="page-sub">{{ subtitle }}</p>
         </div>
       </div>
-      <div style="display:flex;align-items:center;gap:12px">
+      <div class="page-header-right">
         <slot name="header-extra" />
         <q-btn
           unelevated
@@ -25,7 +25,7 @@
     </div>
 
     <!-- Search + Filters -->
-    <div class="search-bar q-mb-lg">
+    <div class="search-bar q-mb-md">
       <q-input
         v-model="search"
         placeholder="Buscar..."
@@ -57,6 +57,7 @@
         class="vet-table"
         :rows-per-page-options="[10, 25, 50]"
         :no-data-label="noDataLabel"
+        :wrap-cells="false"
       >
         <template #loading>
           <q-inner-loading showing color="purple" />
@@ -134,25 +135,35 @@ const search = ref('')
 <style scoped>
 .vet-page { background: #0f1117; min-height: 100vh; }
 
-/* Page Header */
+/* ── Page Header ── */
 .page-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 12px;
 }
 
 .page-header-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.page-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 .page-icon {
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -160,16 +171,23 @@ const search = ref('')
 }
 
 .page-title {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   color: #fff;
   margin: 0;
+  line-height: 1.2;
 }
 
 .page-sub {
-  font-size: 13px;
+  font-size: 12px;
   color: rgba(255,255,255,0.45);
-  margin: 2px 0 0;
+  margin: 3px 0 0;
+  line-height: 1.4;
+  /* Truncate on very small screens */
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .add-btn {
@@ -177,8 +195,9 @@ const search = ref('')
   color: white !important;
   border-radius: 10px !important;
   font-weight: 600;
-  padding: 8px 20px;
+  padding: 8px 16px;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .add-btn:hover {
@@ -186,11 +205,20 @@ const search = ref('')
   box-shadow: 0 6px 20px rgba(108,99,255,0.4);
 }
 
-/* Search */
-.search-bar { display: flex; gap: 12px; }
-.search-input { flex: 1; max-width: 400px; }
+/* ── Search ── */
+.search-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.search-input {
+  flex: 1;
+  min-width: 160px;
+  max-width: 400px;
+}
 
-/* Table Card */
+/* ── Table Card ── */
 .table-card {
   background: #1a1d2e !important;
   border: 1px solid rgba(255,255,255,0.07) !important;
@@ -198,7 +226,16 @@ const search = ref('')
   overflow: hidden;
 }
 
-/* Actions */
+/* horizontal scroll for wide tables on small screens */
+.table-card :deep(.q-table__container) {
+  overflow-x: auto !important;
+}
+
+.table-card :deep(.q-table) {
+  min-width: 500px;
+}
+
+/* ── Actions ── */
 .actions-cell { white-space: nowrap; }
 
 .action-btn { transition: all 0.15s ease; }
@@ -208,4 +245,42 @@ const search = ref('')
 .delete-btn:hover { background: rgba(255,107,107,0.15) !important; }
 
 .status-badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; }
+
+/* ── Mobile tweaks ── */
+@media (max-width: 599px) {
+  .page-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+  }
+  .page-title {
+    font-size: 17px;
+  }
+  .add-btn {
+    padding: 7px 12px;
+    font-size: 13px;
+  }
+  .search-input {
+    max-width: 100%;
+  }
+  .search-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .search-bar > :deep(.filter-btn-group) {
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 400px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .page-header-right {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
 </style>
