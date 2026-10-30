@@ -9,54 +9,54 @@ const Visita = require('./backend/models/Visita');
 const Tratamiento = require('./backend/models/Tratamiento');
 
 const datosVeterinarios = [
-    { nombre: 'Dra. María Fernanda Gómez', especialidad: 'Cirugía General y Traumatología', costo_consulta: 95000 },
-    { nombre: 'Dr. Carlos Alberto Mendoza', especialidad: 'Dermatología Veterinaria', costo_consulta: 85000 },
-    { nombre: 'Dra. Laura Camila Pérez', especialidad: 'Cardiología y Neumología', costo_consulta: 90000 },
-    { nombre: 'Dr. Alejandro Silva Ríos', especialidad: 'Neurología y Medicina Interna', costo_consulta: 100000 },
-    { nombre: 'Dra. Sofía Martínez Ruiz', especialidad: 'Oftalmología Veterinaria', costo_consulta: 85000 },
-    { nombre: 'Dr. Javier Eduardo Torres', especialidad: 'Odontología Veterinaria', costo_consulta: 80000 },
-    { nombre: 'Dra. Valentina Castro Delgado', especialidad: 'Nutrición y Dietética', costo_consulta: 70000 },
-    { nombre: 'Dr. Andrés Felipe Morales', especialidad: 'Medicina General y Preventiva', costo_consulta: 60000 },
-    { nombre: 'Dra. Camila Andrea Rojas', especialidad: 'Oncología y Cuidados Paliativos', costo_consulta: 110000 },
-    { nombre: 'Dr. Gabriel Esteban Vargas', especialidad: 'Animales Exóticos y de Compañía', costo_consulta: 85000 },
-    { nombre: 'Dra. Daniela Paola Rincón', especialidad: 'Fisioterapia y Rehabilitación', costo_consulta: 75000 },
-    { nombre: 'Dr. Ricardo José Navarrete', especialidad: 'Gastroenterología Veterinaria', costo_consulta: 90000 },
-    { nombre: 'Dra. Juliana María Suaza', especialidad: 'Endocrinología y Metabólicas', costo_consulta: 95000 },
-    { nombre: 'Dr. Mateo Alejandro Beltrán', especialidad: 'Etología y Conducta Animal', costo_consulta: 70000 },
-    { nombre: 'Dra. Natalia Andrea Quintero', especialidad: 'Imagenología y Ecografía', costo_consulta: 85000 }
+    { nombre: 'Dra. María Fernanda Gómez',    cedula: '52701234', especialidad: 'Cirugía General y Traumatología',   costo_consulta: 95000  },
+    { nombre: 'Dr. Carlos Alberto Mendoza',    cedula: '79812345', especialidad: 'Dermatología Veterinaria',          costo_consulta: 85000  },
+    { nombre: 'Dra. Laura Camila Pérez',       cedula: '53923456', especialidad: 'Cardiología y Neumología',          costo_consulta: 90000  },
+    { nombre: 'Dr. Alejandro Silva Ríos',      cedula: '80034567', especialidad: 'Neurología y Medicina Interna',     costo_consulta: 100000 },
+    { nombre: 'Dra. Sofía Martínez Ruiz',      cedula: '54145678', especialidad: 'Oftalmología Veterinaria',          costo_consulta: 85000  },
+    { nombre: 'Dr. Javier Eduardo Torres',     cedula: '81256789', especialidad: 'Odontología Veterinaria',           costo_consulta: 80000  },
+    { nombre: 'Dra. Valentina Castro Delgado', cedula: '55367890', especialidad: 'Nutrición y Dietética',             costo_consulta: 70000  },
+    { nombre: 'Dr. Andrés Felipe Morales',     cedula: '82478901', especialidad: 'Medicina General y Preventiva',     costo_consulta: 60000  },
+    { nombre: 'Dra. Camila Andrea Rojas',      cedula: '56589012', especialidad: 'Oncología y Cuidados Paliativos',   costo_consulta: 110000 },
+    { nombre: 'Dr. Gabriel Esteban Vargas',    cedula: '83690123', especialidad: 'Animales Exóticos y de Compañía',   costo_consulta: 85000  },
+    { nombre: 'Dra. Daniela Paola Rincón',     cedula: '57701234', especialidad: 'Fisioterapia y Rehabilitación',     costo_consulta: 75000  },
+    { nombre: 'Dr. Ricardo José Navarrete',    cedula: '84812345', especialidad: 'Gastroenterología Veterinaria',     costo_consulta: 90000  },
+    { nombre: 'Dra. Juliana María Suaza',      cedula: '58923456', especialidad: 'Endocrinología y Metabólicas',      costo_consulta: 95000  },
+    { nombre: 'Dr. Mateo Alejandro Beltrán',   cedula: '85034567', especialidad: 'Etología y Conducta Animal',        costo_consulta: 70000  },
+    { nombre: 'Dra. Natalia Andrea Quintero',  cedula: '59145678', especialidad: 'Imagenología y Ecografía',          costo_consulta: 85000  }
 ];
 
 const datosDuenos = [
-    { nombre: 'Juan Carlos Rodríguez', dirección: 'Calle 45 # 12-34, Bogotá', telefono: '3104567890', email: 'juan.rodriguez@email.com' },
-    { nombre: 'Ana Isabel Gutiérrez', dirección: 'Carrera 15 # 88-20, Medellín', telefono: '3115678901', email: 'ana.gutierrez@email.com' },
-    { nombre: 'Luis Fernando Martínez', dirección: 'Avenida 6N # 22-45, Cali', telefono: '3126789012', email: 'luis.martinez@email.com' },
-    { nombre: 'Diana Marcela López', dirección: 'Calle 72 # 10-15, Barranquilla', telefono: '3137890123', email: 'diana.lopez@email.com' },
-    { nombre: 'Roberto Carlos Gómez', dirección: 'Transversal 31 # 45-67, Bucaramanga', telefono: '3148901234', email: 'roberto.gomez@email.com' },
-    { nombre: 'Claudia Patricia Hernández', dirección: 'Carrera 9 # 115-30, Pereira', telefono: '3159012345', email: 'claudia.hernandez@email.com' },
-    { nombre: 'Jorge Enrique Ramírez', dirección: 'Calle 100 # 19-45, Manizales', telefono: '3160123456', email: 'jorge.ramirez@email.com' },
-    { nombre: 'Esperanza Morales Cruz', dirección: 'Diagonal 40 # 25-10, Cartagena', telefono: '3171234567', email: 'esperanza.morales@email.com' },
-    { nombre: 'Felipe Andrés Castro', dirección: 'Calle 13 # 68D-21, Santa Marta', telefono: '3182345678', email: 'felipe.castro@email.com' },
-    { nombre: 'Sandra Milena Ospina', dirección: 'Carrera 43A # 1-50, Ibagué', telefono: '3193456789', email: 'sandra.ospina@email.com' },
-    { nombre: 'Oscar Mauricio Vargas', dirección: 'Calle 50 # 33-12, Villavicencio', telefono: '3004567891', email: 'oscar.vargas@email.com' },
-    { nombre: 'Paula Andrea Benítez', dirección: 'Avenida El Dorado # 68B-85, Pasto', telefono: '3015678902', email: 'paula.benitez@email.com' },
-    { nombre: 'Santiago Moreno Rios', dirección: 'Carrera 7 # 127-10, Cucuta', telefono: '3026789013', email: 'santiago.moreno@email.com' },
-    { nombre: 'Carolina Salazar Duque', dirección: 'Calle 26 # 59-51, Armenia', telefono: '3037890124', email: 'carolina.salazar@email.com' },
-    { nombre: 'Hector Fabio Valencia', dirección: 'Transversal 93 # 51-24, Neiva', telefono: '3048901235', email: 'hector.valencia@email.com' },
-    { nombre: 'Mónica Alexandra Parra', dirección: 'Calle 134 # 19-20, Bogotá', telefono: '3109876543', email: 'monica.parra@email.com' },
-    { nombre: 'Diego Fernando Pinzón', dirección: 'Carrera 80 # 32-14, Medellín', telefono: '3118765432', email: 'diego.pinzon@email.com' },
-    { nombre: 'Adriana Lucía Villamizar', dirección: 'Calle 9 # 4-12, Cali', telefono: '3127654321', email: 'adriana.villamizar@email.com' },
-    { nombre: 'Gustavo Adolfo Buitrago', dirección: 'Carrera 54 # 75-80, Barranquilla', telefono: '3136543210', email: 'gustavo.buitrago@email.com' },
-    { nombre: 'Gloria Inés Cardona', dirección: 'Calle 36 # 28-05, Bucaramanga', telefono: '3145432109', email: 'gloria.cardona@email.com' },
-    { nombre: 'Camilo Ernesto Lozano', dirección: 'Transversal 15 # 10-40, Tunja', telefono: '3154321098', email: 'camilo.lozano@email.com' },
-    { nombre: 'Patricia Elena Santamaría', dirección: 'Carrera 27 # 45-12, Manizales', telefono: '3163210987', email: 'patricia.santamaria@email.com' },
-    { nombre: 'Jaime Alberto Montañéz', dirección: 'Calle 15 # 8-33, Montería', telefono: '3172109876', email: 'jaime.montanez@email.com' },
-    { nombre: 'Verónica María Agudelo', dirección: 'Diagonal 25 # 50-10, Envigado', telefono: '3181098765', email: 'veronica.agudelo@email.com' },
-    { nombre: 'Esteban José Caicedo', dirección: 'Avenida 4N # 10-15, Popayán', telefono: '3190987654', email: 'esteban.caicedo@email.com' },
-    { nombre: 'Liliana Patricia Forero', dirección: 'Calle 170 # 15-40, Bogotá', telefono: '3001239876', email: 'liliana.forero@email.com' },
-    { nombre: 'Mauricio Andrés Granados', dirección: 'Carrera 65 # 48-12, Medellín', telefono: '3012348765', email: 'mauricio.granados@email.com' },
-    { nombre: 'Beatriz Eugenia Holguín', dirección: 'Calle 5 # 38-20, Cali', telefono: '3023457654', email: 'beatriz.holguin@email.com' },
-    { nombre: 'Raúl Emilio Samper', dirección: 'Carrera 46 # 84-15, Barranquilla', telefono: '3034566543', email: 'raul.samper@email.com' },
-    { nombre: 'Tatiana Marcela Zuleta', dirección: 'Calle 48 # 32-08, Bucaramanga', telefono: '3045675432', email: 'tatiana.zuleta@email.com' }
+    { nombre: 'Juan Carlos Rodríguez',     cedula: '79523418', dirección: 'Calle 45 # 12-34, Bogotá',                 telefono: '3104567890', email: 'juan.rodriguez@email.com'       },
+    { nombre: 'Ana Isabel Gutiérrez',      cedula: '43612509', dirección: 'Carrera 15 # 88-20, Medellín',             telefono: '3115678901', email: 'ana.gutierrez@email.com'        },
+    { nombre: 'Luis Fernando Martínez',    cedula: '94327816', dirección: 'Avenida 6N # 22-45, Cali',                 telefono: '3126789012', email: 'luis.martinez@email.com'       },
+    { nombre: 'Diana Marcela López',       cedula: '55118274', dirección: 'Calle 72 # 10-15, Barranquilla',           telefono: '3137890123', email: 'diana.lopez@email.com'         },
+    { nombre: 'Roberto Carlos Gómez',      cedula: '91435627', dirección: 'Transversal 31 # 45-67, Bucaramanga',      telefono: '3148901234', email: 'roberto.gomez@email.com'       },
+    { nombre: 'Claudia Patricia Hernández',cedula: '52871034', dirección: 'Carrera 9 # 115-30, Pereira',              telefono: '3159012345', email: 'claudia.hernandez@email.com'   },
+    { nombre: 'Jorge Enrique Ramírez',     cedula: '77246183', dirección: 'Calle 100 # 19-45, Manizales',             telefono: '3160123456', email: 'jorge.ramirez@email.com'       },
+    { nombre: 'Esperanza Morales Cruz',    cedula: '40563917', dirección: 'Diagonal 40 # 25-10, Cartagena',           telefono: '3171234567', email: 'esperanza.morales@email.com'   },
+    { nombre: 'Felipe Andrés Castro',      cedula: '1018723496', dirección: 'Calle 13 # 68D-21, Santa Marta',         telefono: '3182345678', email: 'felipe.castro@email.com'       },
+    { nombre: 'Sandra Milena Ospina',      cedula: '34982751', dirección: 'Carrera 43A # 1-50, Ibagué',               telefono: '3193456789', email: 'sandra.ospina@email.com'       },
+    { nombre: 'Oscar Mauricio Vargas',     cedula: '80416239', dirección: 'Calle 50 # 33-12, Villavicencio',          telefono: '3004567891', email: 'oscar.vargas@email.com'        },
+    { nombre: 'Paula Andrea Benítez',      cedula: '51397462', dirección: 'Avenida El Dorado # 68B-85, Pasto',        telefono: '3015678902', email: 'paula.benitez@email.com'       },
+    { nombre: 'Santiago Moreno Rios',      cedula: '1098234567', dirección: 'Carrera 7 # 127-10, Cucuta',             telefono: '3026789013', email: 'santiago.moreno@email.com'    },
+    { nombre: 'Carolina Salazar Duque',    cedula: '43875201', dirección: 'Calle 26 # 59-51, Armenia',                telefono: '3037890124', email: 'carolina.salazar@email.com'   },
+    { nombre: 'Hector Fabio Valencia',     cedula: '79684310', dirección: 'Transversal 93 # 51-24, Neiva',            telefono: '3048901235', email: 'hector.valencia@email.com'    },
+    { nombre: 'Mónica Alexandra Parra',    cedula: '52018473', dirección: 'Calle 134 # 19-20, Bogotá',                telefono: '3109876543', email: 'monica.parra@email.com'        },
+    { nombre: 'Diego Fernando Pinzón',     cedula: '80257149', dirección: 'Carrera 80 # 32-14, Medellín',             telefono: '3118765432', email: 'diego.pinzon@email.com'        },
+    { nombre: 'Adriana Lucía Villamizar',  cedula: '37642985', dirección: 'Calle 9 # 4-12, Cali',                     telefono: '3127654321', email: 'adriana.villamizar@email.com'  },
+    { nombre: 'Gustavo Adolfo Buitrago',   cedula: '91823406', dirección: 'Carrera 54 # 75-80, Barranquilla',         telefono: '3136543210', email: 'gustavo.buitrago@email.com'   },
+    { nombre: 'Gloria Inés Cardona',       cedula: '47391065', dirección: 'Calle 36 # 28-05, Bucaramanga',            telefono: '3145432109', email: 'gloria.cardona@email.com'     },
+    { nombre: 'Camilo Ernesto Lozano',     cedula: '1014503278', dirección: 'Transversal 15 # 10-40, Tunja',          telefono: '3154321098', email: 'camilo.lozano@email.com'      },
+    { nombre: 'Patricia Elena Santamaría', cedula: '46891523', dirección: 'Carrera 27 # 45-12, Manizales',            telefono: '3163210987', email: 'patricia.santamaria@email.com'},
+    { nombre: 'Jaime Alberto Montañéz',    cedula: '72560341', dirección: 'Calle 15 # 8-33, Montería',                telefono: '3172109876', email: 'jaime.montanez@email.com'     },
+    { nombre: 'Verónica María Agudelo',    cedula: '42738516', dirección: 'Diagonal 25 # 50-10, Envigado',            telefono: '3181098765', email: 'veronica.agudelo@email.com'   },
+    { nombre: 'Esteban José Caicedo',      cedula: '1061782435', dirección: 'Avenida 4N # 10-15, Popayán',            telefono: '3190987654', email: 'esteban.caicedo@email.com'   },
+    { nombre: 'Liliana Patricia Forero',   cedula: '51674392', dirección: 'Calle 170 # 15-40, Bogotá',                telefono: '3001239876', email: 'liliana.forero@email.com'     },
+    { nombre: 'Mauricio Andrés Granados',  cedula: '98031275', dirección: 'Carrera 65 # 48-12, Medellín',             telefono: '3012348765', email: 'mauricio.granados@email.com'  },
+    { nombre: 'Beatriz Eugenia Holguín',   cedula: '31904857', dirección: 'Calle 5 # 38-20, Cali',                    telefono: '3023457654', email: 'beatriz.holguin@email.com'   },
+    { nombre: 'Raúl Emilio Samper',        cedula: '72489163', dirección: 'Carrera 46 # 84-15, Barranquilla',         telefono: '3034566543', email: 'raul.samper@email.com'        },
+    { nombre: 'Tatiana Marcela Zuleta',    cedula: '38251790', dirección: 'Calle 48 # 32-08, Bucaramanga',            telefono: '3045675432', email: 'tatiana.zuleta@email.com'     }
 ];
 
 const plantillasMascotas = [
@@ -226,8 +226,10 @@ async function seedDB() {
         const mascotasAInsertar = plantillasMascotas.map((m, idx) => {
             const duenoAsignado = duenosInsertados[idx % duenosInsertados.length];
             const vetAsignado = veterinariosInsertados[idx % veterinariosInsertados.length];
+            const codigoMascota = `MC-${String(idx + 1).padStart(4, '0')}`;
             return {
                 ...m,
+                codigo: codigoMascota,
                 iddueño: duenoAsignado._id,
                 idveterinario: vetAsignado._id
             };
