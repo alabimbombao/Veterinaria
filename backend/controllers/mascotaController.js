@@ -3,25 +3,21 @@ const Mascota = require('../models/Mascota');
 const Dueno = require('../models/dueño');
 const Veterinario = require('../models/Veterinario');
 
-// Función auxiliar para autoincrementar el código mt00, mt01, mt02...
+// Función auxiliar para autoincrementar el código con formato estándar MC-XXXX
 const generarCodigoMascota = async () => {
-    const mascotas = await Mascota.find({ codigo: { $regex: /^mt\d+$/i } }, 'codigo');
-    let maxNum = -1;
+    // Buscar todos los códigos con formato MC-NNNN (estándar actual)
+    const mascotas = await Mascota.find({ codigo: { $regex: /^MC-\d+$/i } }, 'codigo');
+    let maxNum = 0;
     for (const m of mascotas) {
         if (m.codigo) {
-            const num = parseInt(m.codigo.replace(/^mt/i, ''), 10);
+            const num = parseInt(m.codigo.replace(/^MC-/i, ''), 10);
             if (!isNaN(num) && num > maxNum) {
                 maxNum = num;
             }
         }
     }
-    if (maxNum === -1) {
-        const total = await Mascota.countDocuments();
-        if (total === 0) return 'mt00';
-        return `mt${String(total).padStart(2, '0')}`;
-    }
     const siguiente = maxNum + 1;
-    return `mt${String(siguiente).padStart(2, '0')}`;
+    return `MC-${String(siguiente).padStart(4, '0')}`;
 };
 
 // Obtener todas las mascotas activas
